@@ -1,4 +1,42 @@
 /**
+ * Example of how to use the property get/set functions.
+ */
+
+function myFunction() {
+  // JSON conversion done behind the scene: You can store/get objects.
+  var userData1 = {
+    name : 'John Doe',
+    age : 35,
+    email : 'johndoe@example.com',
+  };
+  var moreUserData = 'some value';
+
+  // Data is stored using data ID keys. The stored data will be unique to this
+  // installation of gash -- it is stored in a script-unique entry.
+  gash.setUserData('basicData', userData);
+  gash.setUserData('extraData', moreUserData);
+
+  // Similar functions are used for fetching data:
+  var evenMoreData = gash.getUserData('dataId');
+
+  // You can set global data in a similar way:
+  var someGlobalData = {
+    user1 : 'foo',
+    user2 : 'bar',
+    user3 : 'baz',
+  }
+  gash.setGlobalData('dataId', someGlobalData);
+
+  // In the special case where you have global data in an object, you can get
+  // and set values for only one specified key in the object:
+  gash.setGlobalData('dataId', 'hazza', 'user4');
+  var subEntry = gash.getGlobalData('dataId', 'user1'); // Gives 'foo'.
+
+  // It might be good to know that since all this data is stored as user or
+  // script properties, they have a maximum allowed size of 8 kB. No big data.
+}
+
+/**
  * Example of how to use the file upload pseudo widget.
  */
 
