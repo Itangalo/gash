@@ -1,7 +1,6 @@
 /**
  * Example of how to use the property get/set functions.
  */
-
 function myFunction() {
   // JSON conversion done behind the scene: You can store/get objects.
   var userData1 = {
@@ -39,7 +38,6 @@ function myFunction() {
 /**
  * Example of how to use the file upload pseudo widget.
  */
-
 function doGet() {
   var app = UiApp.createApplication();
 
@@ -67,7 +65,6 @@ function handlerCallback(eventInfo) {
 /**
  * Example of how to use areas to build a UI.
  */
-
 function doGet() {
   var app = UiApp.createApplication();
 
