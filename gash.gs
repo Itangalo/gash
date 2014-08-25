@@ -23,6 +23,9 @@ var gash = (function () {
  */
   // Adds default properties to an object.
   function addDefaults(object, defaults) {
+    if (object === undefined) {
+      return defaults;
+    }
     for (var i in defaults) {
       // Explicit check to prevent 'false' from being overwritten by defaults.
       if (object[i] === undefined) {
