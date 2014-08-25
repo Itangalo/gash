@@ -8,22 +8,29 @@
  * source code and license details.
  */
 
-/**
- * The main module for the Waxon framework, taking care of UI calls and some more.
- */
 var gash = (function () {
   // Private variables
   var cache = {};
   var defaultWrapperAttributes = {border : 'none', padding : '0px', margin : '0px'};
 
   // Public variables
-  var versionNumber = 0.1;
+  var versionNumber = 0.2;
   var areas = {};
   var defaultAttributes = {};
 
 /**
  * Meta-functions, for managing property storage.
  */
+  // Adds default properties to an object.
+  function addDefaults(object, defaults) {
+    for (var i in defaults) {
+      // Explicit check to prevent 'false' from being overwritten by defaults.
+      if (object[i] === undefined) {
+        object[i] = defaults[i];
+      }
+    }
+    return object;
+  }
 
   // Fetches (and if necessary builds) the hopefully unique ID for
   // this instance of gash. Uses a time-based token.
@@ -143,7 +150,11 @@ var gash = (function () {
     if (typeof element == 'string') {
       element = app.createLabel(element);
     }
-    panel.add(element.setStyleAttributes(attributes));
+    // Some UI objects doesn't accept style attributes.
+    if (typeof element.setStyleAttributes == 'function') {
+      element.setStyleAttributes(attributes);
+    }
+    panel.add(element);
     return app;
   }
   Area.prototype.clear = function() {
@@ -240,6 +251,7 @@ var gash = (function () {
     areas : areas,
     defaultAttributes : defaultAttributes,
     // Methods
+    addDefaults : addDefaults,
     getScriptId : getScriptId,
     getUserId : getUserId,
     getUserData : getUserData,
