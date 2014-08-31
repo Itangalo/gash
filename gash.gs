@@ -22,9 +22,12 @@ var gash = (function () {
 /**
  * Meta-functions, for managing property storage.
  */
-  // Stores query parameters where all methods can access them.
-  function setQueryParameters(queryInfo) {
-    queryParameters = {};
+  // Stores query parameters where all methods can access them. Query parameters
+  // can be accessed through the 'queryParameters' property. All parameters are
+  // stored as arrays. Their value(s) can be set in the path by adding queries
+  // of the type ?foo=value1,value2&bar=value3.
+  function storeQueryParameters(queryInfo) {
+    var queryParameters = {};
     for (var i in queryInfo.parameters) {
       if (queryInfo.parameters[i].length > 1) {
         queryParameters[i] = queryInfo.parameters[i];
@@ -270,7 +273,7 @@ var gash = (function () {
     areas : areas,
     defaultAttributes : defaultAttributes,
     // Methods
-    setQueryParameters : setQueryParameters,
+    storeQueryParameters : storeQueryParameters,
     addDefaults : addDefaults,
     getScriptId : getScriptId,
     getUserId : getUserId,
