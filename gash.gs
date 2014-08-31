@@ -15,12 +15,27 @@ var gash = (function () {
 
   // Public variables
   var versionNumber = 0.2;
+  var queryParameters = {};
   var areas = {};
   var defaultAttributes = {};
 
 /**
  * Meta-functions, for managing property storage.
  */
+  // Stores query parameters where all methods can access them.
+  function setQueryParameters(queryInfo) {
+    queryParameters = {};
+    for (var i in queryInfo.parameters) {
+      if (queryInfo.parameters[i].length > 1) {
+        queryParameters[i] = queryInfo.parameters[i];
+      }
+      else {
+        queryParameters[i] = queryInfo.parameters[i][0].split(',');
+      }
+    }
+    this.queryParameters = queryParameters;
+  }
+
   // Adds default properties to an object.
   function addDefaults(object, defaults) {
     if (object === undefined) {
@@ -251,9 +266,11 @@ var gash = (function () {
   return {
     // Variables
     versionNumber : versionNumber,
+    queryParameters : queryParameters,
     areas : areas,
     defaultAttributes : defaultAttributes,
     // Methods
+    setQueryParameters : setQueryParameters,
     addDefaults : addDefaults,
     getScriptId : getScriptId,
     getUserId : getUserId,
