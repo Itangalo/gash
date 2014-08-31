@@ -11,13 +11,14 @@
 var gash = (function () {
   // Private variables
   var cache = {};
-  var defaultWrapperAttributes = {border : 'none', padding : '0px', margin : '0px'};
 
   // Public variables
-  var versionNumber = 0.2;
+  var versionNumber = 0.3;
   var queryParameters = {};
   var areas = {};
-  var defaultAttributes = {};
+  var defaultWrapperAttributes = {maxHeight : '240px', width : '640px', padding : '0px', margin : '0px', border : 'thin lightgrey solid', overflow : 'auto'};
+  var defaultScrollAttributes = {};
+  var defaultWidgetAttributes = {};
 
 /**
  * Meta-functions, for managing property storage.
@@ -155,17 +156,11 @@ var gash = (function () {
 /**
  * Functions for managing areas/UI.
  */
-  function Area(name, attributes) {
+  function Area(name, widgetAttributes) {
     this.id = name;
-    this.attributes = attributes || gash.defaultAttributes;
+    this.widgetAttributes = gash.addDefaults(widgetAttributes, defaultWidgetAttributes);
   };
   Area.prototype.add = function(element, attributes) {
-    // Merge the frame's default attributes with any overrides specified by arguments.
-    attributes = attributes || {};
-    for (var i in defaultAttributes) {
-      attributes[i] = attributes[i] || defaultAttributes[i];
-    }
-
     var app = UiApp.getActiveApplication();
     var panel = app.getElementById(this.id);
     if (typeof element == 'string') {
@@ -173,61 +168,31 @@ var gash = (function () {
     }
     // Some UI objects doesn't accept style attributes.
     if (typeof element.setStyleAttributes == 'function') {
-      element.setStyleAttributes(attributes);
+      element.setStyleAttributes(gash.addDefaults(attributes, this.widgetAttributes));
     }
     panel.add(element);
     return app;
   }
   Area.prototype.clear = function() {
-    gash.clearArea(this.name);
+    var app = UiApp.getActiveApplication();
+    var panel = app.getElementById(this.id);
+    panel.clear();
+    return app;
   }
 
-
-  // Adds a new area, with specified CSS attributes. The area consists of a caption panel, containing
-  // a scroll panel, containing a vertical panel. The vertical panel will contain other UI elements.
-  function addArea(name, attributes, label) {
+  // Adds a new area, consisting of a caption panel (with optional label), containing a scroll panel,
+  // containing a vertical panel. The vertical panel will contain other UI elements. CSS attributes
+  // for the outer wrapper can be set, as well as default attributes for widgets added to the area.
+  function addArea(name, label, widgetAttributes, areaAttributes) {
     var app = UiApp.getActiveApplication();
-    var captionPanel = app.createCaptionPanel(label || '').setStyleAttributes(defaultWrapperAttributes);
-    var scrollPanel = app.createScrollPanel().setId(name + '-scroll').setStyleAttributes(attributes || {});
-    var container = app.createVerticalPanel().setId(name);
+    var captionPanel = app.createCaptionPanel(label || '').setId(name + '-wrapper').setStyleAttributes(gash.addDefaults(areaAttributes, defaultWrapperAttributes));;
+    var scrollPanel = app.createScrollPanel().setId(name + '-scroll').setStyleAttributes(defaultScrollAttributes);
+    var container = app.createVerticalPanel().setId(name);//.setStyleAttributes({width : '100%', height : '100%'});
     captionPanel.add(scrollPanel);
     scrollPanel.add(container);
     app.add(captionPanel);
-    areas[name] = new Area(name);
+    areas[name] = new Area(name, widgetAttributes);
     return areas[name];
-  }
-
-  // Adds a UI element to the specified area. If just a text string is provided,
-  // it will be added as a plain label element.
-  function addToArea(element, area, attributes) {
-    if (areas[area] == undefined) {
-      throw 'Cannot add elements to area ' + area + ': It does not exist.';
-    }
-
-    // Merge the frame's default attributes with any overrides specified by arguments.
-    attributes = attributes || {};
-    for (var i in defaultAttributes) {
-      attributes[i] = attributes[i] || defaultAttributes[i];
-    }
-
-    var app = UiApp.getActiveApplication();
-    var panel = app.getElementById(area);
-    if (typeof element == 'string') {
-      element = app.createLabel(element);
-    }
-    panel.add(element.setStyleAttributes(attributes));
-    return app;
-  }
-
-  // Removes all elements from the specified area.
-  function clearArea(area) {
-    if (this.areas[area] == undefined) {
-      throw 'Cannot clear area ' + area + ': It does not exist.';
-    }
-    var app = UiApp.getActiveApplication();
-    var panel = app.getElementById(area);
-    panel.clear();
-    return app;
   }
 
 /**
@@ -271,7 +236,9 @@ var gash = (function () {
     versionNumber : versionNumber,
     queryParameters : queryParameters,
     areas : areas,
-    defaultAttributes : defaultAttributes,
+    defaultWrapperAttributes : defaultWrapperAttributes,
+    defaultScrollAttributes : defaultScrollAttributes,
+    defaultWidgetAttributes : defaultWidgetAttributes,
     // Methods
     storeQueryParameters : storeQueryParameters,
     addDefaults : addDefaults,
@@ -282,8 +249,6 @@ var gash = (function () {
     getGlobalData : getGlobalData,
     setGlobalData : setGlobalData,
     addArea : addArea,
-    addToArea : addToArea,
-    clearArea : clearArea,
     createFileUpload : createFileUpload,
   };
 }) ();
