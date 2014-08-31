@@ -35,7 +35,7 @@ var gashMath = (function () {
     
     // Build a table with points to plot.
     var points = Charts.newDataTable().addColumn(Charts.ColumnType.NUMBER, 'x').addColumn(Charts.ColumnType.NUMBER, options.fTitle || 'y');
-    var step = (max - min) / options.steps;
+    var step = (max - min) / (options.steps + 1);
     for (var i = min; i <= max; i = i + step) {
       if (!isNaN(f(i))) {
         points.addRow([i, f(i)]);
