@@ -66,9 +66,6 @@ var gashMath = (function () {
       graph.setYAxisTitle(options.yTitle);
     }
     
-    // This is experimental. Maybe it should be turned off.
-    graph.setOption('explorer', {});
-    
     return graph.build();
   }
   
