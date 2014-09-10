@@ -13,7 +13,7 @@ var gash = (function () {
   var cache = {};
 
   // Public variables
-  var versionNumber = 0.3;
+  var versionNumber = 0.4;
   var queryParameters = {};
   var areas = {};
   var defaultWrapperAttributes = {maxHeight : '240px', width : '640px', padding : '0px', margin : '0px', border : 'thin lightgrey solid', overflow : 'auto'};
@@ -230,6 +230,25 @@ var gash = (function () {
     return form;
   }
 
+  // Adds a pseudo-widget for selecting a folder in Google Drive. The folder ID will be
+  // available through the name provided in the id argument.
+  function createFolderListBox(id, externalHandler, label) {
+    label = label || 'Search and select folder:';
+    var app = UiApp.getActiveApplication();
+    var handler = app.createServerHandler('createFolderListBoxHandler');
+    var wrapper = app.createHorizontalPanel();
+    wrapper.add(app.createLabel(label).setId(id + '-label'));
+    var searchBox = app.createTextBox().setId(id + '-search').setName(id + '-search');
+    handler.addCallbackElement(searchBox);
+    wrapper.add(searchBox);
+    wrapper.add(app.createButton('search', handler).setId(id + '-button'));
+
+    var folderListBox = app.createListBox().setId(id).setName(id).addItem('select folder', '');
+    externalHandler.addCallbackElement(folderListBox);
+    wrapper.add(folderListBox);
+    return wrapper;
+  }
+
   // The publically accessible properties and methods
   return {
     // Variables
@@ -250,6 +269,7 @@ var gash = (function () {
     setGlobalData : setGlobalData,
     addArea : addArea,
     createFileUpload : createFileUpload,
+    createFolderListBox : createFolderListBox,
   };
 }) ();
 
@@ -266,6 +286,29 @@ function doPost(eventInfo) {
   hidden.setValue(file.getId());
   file.setTrashed(true);
 
+  return app;
+}
+
+// Handler callback making the 'createFolderListBox' method work.
+function createFolderListBoxHandler(eventInfo) {
+  var app = UiApp.getActiveApplication();
+  // Extract the id of the list box with folders.
+  var id = eventInfo.parameter.source.split('-')[0];
+  var listBox = app.getElementById(id);
+  listBox.clear();
+
+  // Search for matching folders and populate the list box.
+  var searchString = eventInfo.parameter[id + '-search'];
+  var folders = DriveApp.searchFolders('title contains "' + searchString + '"');
+  var items = {};
+  while (folders.hasNext()) {
+    folder = folders.next();
+    items[folder.getId()] = folder.getName();
+  }
+  listBox.addItem('Found ' + Object.keys(items).length + ' folders', '');
+  for (var value in items) {
+    listBox.addItem(items[value], value);
+  }
   return app;
 }
 
