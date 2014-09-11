@@ -13,7 +13,7 @@ var gash = (function () {
   var cache = {};
 
   // Public variables
-  var versionNumber = 0.4;
+  var versionNumber = 0.41;
   var queryParameters = {};
   var areas = {};
   var defaultWrapperAttributes = {maxHeight : '240px', width : '640px', padding : '0px', margin : '0px', border : 'thin lightgrey solid', overflow : 'auto'};
@@ -282,7 +282,7 @@ function doPost(eventInfo) {
   var hidden = app.getElementById(name);
   // Create a file a store it in the user's trash on Google Drive. (Storing it in the trash
   // allows the user to abort the script at any time, and not have extra files lying around.)
-  var file = DocsList.createFile(eventInfo.parameter[name + '-upload']);
+  var file = DriveApp.getRootFolder().createFile(eventInfo.parameter[name + '-upload']);
   hidden.setValue(file.getId());
   file.setTrashed(true);
 
