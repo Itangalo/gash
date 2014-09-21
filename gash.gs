@@ -127,7 +127,7 @@ Object.defineProperty(configObject.prototype, 'addDefaults', {
 });
 
 /**
- * The overWrite method adds and overwrites values of a configObject with the specified properties.
+ * The overwriteWith method adds and overwrites values of a configObject with the specified properties.
  *
  * If the overwrite properties is a configObject, it will be modified and returned. Otherwise a
  * new configObject will be created.
@@ -135,7 +135,7 @@ Object.defineProperty(configObject.prototype, 'addDefaults', {
  * @param {object} [properties= Object (possibly config object) containing the properties used for overwriting.]
  * return {configObject}
  */
-Object.defineProperty(configObject.prototype, 'overwrite', {
+Object.defineProperty(configObject.prototype, 'overwriteWith', {
   value : function(properties) {
     if (properties === undefined) {
       return new configObject(this);

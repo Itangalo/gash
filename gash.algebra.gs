@@ -57,7 +57,7 @@ p.initialize = function() {
  * return {string}
 */
 function preParseExpression(expressionString, options) {
-  options = this.defaults.overwrite(options);
+  options = this.defaults.overwriteWith(options);
   expressionString = expressionString.toString();
 
   // Replace any function names in the expression with tokens, so they won't
@@ -210,7 +210,7 @@ p.evaluate = function(expressionString, variables, allowedOperators) {
  *   gash.algebra.CANNOT_INTERPRET if something is wrong.]
  */
 p.compareExpressions = function(expression1, expression2, var1, var2, options) {
-  options = this.defaults.overwrite(options);
+  options = this.defaults.overwriteWith(options);
   var1 = var1 || 'x';
   var2 = var2 || var1;
   if (typeof var1 == 'string') {

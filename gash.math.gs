@@ -55,7 +55,7 @@ p.CANNOT_INTERPRET = -3;
  * return {object} [An object with properties n (nominator) and d (denominator).]
  */
 p.randomFraction = function(min, max, disallowed, maxDenominator) {
-  var options = this.defaults.overwrite({
+  var options = this.defaults.overwriteWith({
     minCoefficient : min,
     maxCoefficient : max,
     maxDenominator : maxDenominator
@@ -130,7 +130,7 @@ p.gcd = function(a, b) {
  * ]
  */
 p.randomBinomial = function(min, max, options) {
-  options = this.defaults.overwrite(options);
+  options = this.defaults.overwriteWith(options);
   var maxDenominator = parseInt(Math.max(options.maxDenominator.toFixed(0), 1));
   var variable = options.variable || gash.utils.randomSelect(options.randomVariables);
   var mode = options.mode || gash.utils.randomSelect(['straight', 'reverse']);
@@ -183,7 +183,7 @@ p.randomBinomial = function(min, max, options) {
  * return {string} [A LaTeX fraction expression. If no matching fraction is found, the input number. Beware: This is probably a number with a lot of decimals.]
  */
 p.latexFraction = function(a, options) {
-  options = this.defaults.overwrite(options);
+  options = this.defaults.overwriteWith(options);
 
   a = this.findFraction(parseFloat(a), options.maxSearchDenominator);
   if (a.d == 1) {
@@ -211,7 +211,7 @@ p.latexFraction = function(a, options) {
  * return {Image} [A GAS image element with the LaTeX expression.]
  */
 p.latex2image = function(expression, options) {
-  options = this.defaults.overwrite(options);
+  options = this.defaults.overwriteWith(options);
   expression = expression.toString();
 
   var replacements = {
