@@ -280,11 +280,91 @@ p.compareExpressions = function(expression1, expression2, var1, var2, options) {
 
     // Finally, we compare the numeric values of the expressions. The rounding here is to
     // prevent calculation errors to give false negative results.
-    if (val1.toFixed(this.defaults.precision) != val2.toFixed(this.defaults.precision)) {
+    if (val1.toFixed(this.defaults.precision) - val2.toFixed(this.defaults.precision) != 0) {
       return this.INCORRECT;
     }
   }
   // If we got this far, the expressions are most likely the same.
+  return this.CORRECT;
+}
+
+/**
+ * Compares two equations and tries to determine if they represent the same relations.
+ *
+ * One step in comparing the equations made by substituting variables, which is why substitutions
+ * must be declared. If the equation is '4x + 2y = 10', a substitution could be 'y = 5 - 2x'.
+ * The two equations could use different sets of variables.
+ *
+ * @param {string} [equation1= The first of the two equations to compare.]
+ * @param {string} [equation1= The second of the two equations to compare.]
+ * @param {string} [freeVar= Name of the final free variable, remaining when all substitutions have been made. Defaults to 'x'.]
+ * @param {object} [substitutions= An object with keys being the variables to replace, and the values what to replace them with.]
+ * @param {array} [vars2= If different variables are used in the two equations, this array should contain a list of the variables in the second equation.
+ *   The first entry must be the name of the free variable. The order of the remaining variables must match the order in the declared substitutions.]
+ * @param {configObject} [options= Extra options.]
+ * return {integer} [
+ *   gash.algebra.CORRECT if equations are the same.
+ *   gash.algebra.INCORRECT if equations are not the same.
+ *   gash.algebra.CANNOT_INTERPRET if something is wrong.]
+ */
+p.compareEquations = function(equation1, equation2, freeVar, substitutions, vars2, options) {
+  options = this.defaults.overwriteWith(options);
+
+  // Replace variables in the second equation, if needed.
+  if (Array.isArray(vars2)) {
+    if (vars2.length != (Object.keys(substitutions).length + 1)) {
+      return this.CANNOT_INTERPRET;
+    }
+    var replacements = {};
+    replacements[vars2.shift()] = freeVar;
+    for (var i in substitutions) {
+      replacements[vars2.shift()] = i;
+    }
+    equation2 = gash.utils.advancedReplacements(equation2, replacements);
+  }
+
+  var allVars = [freeVar];
+  for (var i in substitutions) {
+    allVars.push(i);
+  }
+
+  // Make the first equation into an equation with right hand side zero.
+  var parts = equation1.split('=');
+  if (parts.length != 2) {
+    return this.CANNOT_INTERPRET;
+  }
+  // Make sure that left and right side are not the same expressions, i.e. we have trivial equations
+  // like '2x=x+x' or '0=0'.
+  if (this.compareExpressions(parts[0], parts[1], allVars) == this.CORRECT) {
+    return this.WRONG_FORM;
+  }
+  equation1 = parts[0] + '-(' + parts[1] + ')';
+
+  // Do the same with the second equation.
+  parts = equation2.split('=');
+  if (parts.length != 2) {
+    return this.CANNOT_INTERPRET;
+  }
+  if (this.compareExpressions(parts[0], parts[1], allVars) == this.CORRECT) {
+    return this.WRONG_FORM;
+  }
+  equation2 = parts[0] + '-(' + parts[1] + ')';
+
+  // Make substitutions in both equations, simplifying them down to one variable.
+  var r;
+  for (var i in substitutions) {
+    r = {};
+    r[i] = '(' + substitutions[i] + ')';
+    equation1 = gash.utils.advancedReplacements(equation1, r);
+    equation2 = gash.utils.advancedReplacements(equation2, r);
+  }
+
+  // Check that the expression now are the same (actually zero).
+  if (this.compareExpressions(equation1, equation2, freeVar) != this.CORRECT) {
+    return this.INCORRECT;
+  }
+
+  // If we got this far, we assume that the equations represent the same relationship.
   return this.CORRECT;
 }
 
@@ -353,6 +433,27 @@ p.tests = {
     }
     if (gash.algebra.compareExpressions(1/79, '0.5/79 + 0.5/79') != gash.algebra.CORRECT) {
       throw 'Expression comparison has fallen for rounding errors.';
+    }
+  },
+  // Assure some important aspects of expression comparison engine.
+  compareEquationsTests : function() {
+    var eq1 = 'y=5-2x';
+    var eq2 = '4x+2y-10=0';
+    var subs = {y : '5-2x'};
+    if (gash.algebra.compareEquations(eq1, eq2, 'x', subs) != gash.algebra.CORRECT) {
+      throw 'Equation comparison does not recognize that equations represent the same relationships.';
+    }
+    eq2 = '4x+2y=9';
+    if (gash.algebra.compareEquations(eq1, eq2, 'x', subs) != gash.algebra.INCORRECT) {
+      throw 'Equation comparison believs that different equations are actually equal.';
+    }
+    eq2 = '4a+2b=10';
+    if (gash.algebra.compareEquations(eq1, eq2, 'x', subs, ['a', 'b']) != gash.algebra.CORRECT) {
+      throw 'Equation comparison does not handle different sets of variables in the equations.';
+    }
+    eq2 = 'x=x';
+    if (gash.algebra.compareEquations(eq1, eq2, 'x', subs) == gash.algebra.CORRECT) {
+      throw 'Equation comparison accepts trivial equations as correct answers.';
     }
   },
 }
