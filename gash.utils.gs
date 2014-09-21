@@ -64,6 +64,42 @@ p.randomSelect = function(values) {
   return values;
 }
 
+p.advancedReplacements = function(expression, replacements) {
+  var keys = Object.keys(replacements);
+  // Sort the function names by length so a replacement a->b doesn't affect a replacement
+  // asin->arcsin (by turning asin to bsin).
+  keys.sort(function(a, b){
+    return b.length - a.length;
+  });
+
+  var re = {};
+  for (var i in keys) {
+    re[keys[i]] = {};
+    re[keys[i]].from = keys[i];
+    re[keys[i]].to = replacements[keys[i]];
+    re[keys[i]].token = '<' + i + '>';
+  }
+  Logger.log(re);
+
+  // First change all replacement patterns into tokens, so we won't replace them
+  // indefinitely.
+  for (var i in re) {
+    while (expression.replace(re[i].from, re[i].token) != expression) {
+      expression = expression.replace(re[i].from, re[i].token);
+    }
+  }
+
+  // Then go over all the replacements again, changing them from the tokens to the
+  // target values.
+  for (var i in re) {
+    while (expression.replace(re[i].token, re[i].to) != expression) {
+      expression = expression.replace(re[i].token, re[i].to);
+    }
+  }
+
+  return expression;
+}
+
 /**
  * Tests for this plugin.
  */
@@ -86,6 +122,15 @@ p.tests = {
     }
     if (count > 5) {
       throw 'selectRandom appears to respect relative probability. Probably.';
+    }
+  },
+  // Assure that advanced replacements works as intended.
+  advancedReplacementsTest : function() {
+    if (gash.utils.advancedReplacements('a+2bbaa', {a : 'b', b : 'a'}) != 'b+2aabb') {
+      throw 'Advanced replacements does not handle switching of variables.';
+    }
+    if (gash.utils.advancedReplacements('a+2bbaa', {a : 'b', b : 'a', aa : 'c'}) != 'b+2aac') {
+      throw 'Advanced replacements allows shorter replacements to break larger ones.';
     }
   }
 };
