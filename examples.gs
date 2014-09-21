@@ -1,3 +1,5 @@
+THIS FILE NEEDS UPDATING TO REFLECT GASH 2.X.
+
 /**
  * Example of how to use the property get/set functions.
  */

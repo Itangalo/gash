@@ -1,6 +1,8 @@
 gash
 ====
 
+THIS FILE NEEDS UPDATING, TO REFLECT GASH 2.X.
+
 gash (Google Apps Script helpers) contains a number of functions that hopefully
 makes it easier to write Google scripts. For now, gash contains:
 
