@@ -64,6 +64,14 @@ p.randomSelect = function(values) {
   return values;
 }
 
+/**
+ * Replaces all occurances of the listed replacements, allowing switching of variables and 
+ * not breaking up large replacements by smaller ones.
+ *
+ * @param {string} [expression= The string to perform replacements on.]
+ * @param {object} [replacements= An object with the strings that should be replaced as keys, with their replacements as values.]
+ * return {string}
+ */
 p.advancedReplacements = function(expression, replacements) {
   var keys = Object.keys(replacements);
   // Sort the function names by length so a replacement a->b doesn't affect a replacement
@@ -79,7 +87,6 @@ p.advancedReplacements = function(expression, replacements) {
     re[keys[i]].to = replacements[keys[i]];
     re[keys[i]].token = '<' + i + '>';
   }
-  Logger.log(re);
 
   // First change all replacement patterns into tokens, so we won't replace them
   // indefinitely.
