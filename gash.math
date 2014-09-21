@@ -37,6 +37,15 @@ p.defaults = new configObject({
 });
 
 /**
+ * Some constants.
+ */
+p.CORRECT = 1;
+p.CLOSE = 0;
+p.INCORRECT = -1;
+p.WRONG_FORM = -2;
+p.CANNOT_INTERPRET = -3;
+
+/**
  * Builds a random fraction.
  *
  * @param {float} [min= The smallest allowed fraction. See gash.math.defaults.]
@@ -237,4 +246,73 @@ p.numberOfTerms = function(expression) {
   }
 
   return simpleSplit.length - negativeSigns.length + 1;
+}
+
+/**
+ * Converts a string with coodinates into an object where x and y coordinates can be read.
+ *
+ * @param {string} [coordinateString= The string with coordinates, e.g. '(1,4)'.]
+ * return {object} [
+ *   x : The x coordinate, as a string.
+ *   y : The y coordinate, as a string.
+ *   code : If parsing is ambivalent, this is set to gash.math.CANNOT_PARSE.
+ *          If the string cannot be interpreted as a coordinate, it is set to gash.math.WRONG_FORM.
+ *   message : If parsing failed, this contains a clear-text message that could be displayed to the user.
+ */
+function parseCoordinate(coordinateString) {
+  coordinateString = coordinateString.trim();
+  var coordinates = {};
+
+  // Strip off parentheses.
+  if (coordinateString.length == 0) {
+    return {
+      code : -2,
+      message : 'You have not entered any coordinate.'
+    }
+  }
+  if (coordinateString.substring(0, 1) != '(' || coordinateString.substring(coordinateString.length - 1, coordinateString.length) != ')') {
+    return {
+      code : this.WRONG_FORM,
+      message : 'Coordinates should be given withing paranthesis, e.g. "(1, 4)".'
+    }
+  }
+  coordinateString = coordinateString.substring(1, coordinateString.length - 1);
+
+  // Try splitting with ';' or ','.
+  if (coordinateString.split(';').length == 2) {
+    coordinates.x = coordinateString.split(';')[0];
+    coordinates.y = coordinateString.split(';')[1];
+  }
+  else if (coordinateString.split(',').length == 2) {
+    coordinates.x = coordinateString.split(',')[0];
+    coordinates.y = coordinateString.split(',')[1];
+  }
+  // If this doesn't work, try splitting with ', '.
+  else if (coordinateString.split(', ').length == 2) {
+    coordinates.x = coordinateString.split(', ')[0];
+    coordinates.y = coordinateString.split(', ')[1];
+  }
+  // We fail to separate two coordinate values. Analyze and return an error.
+  else {
+    if (coordinateString.split(',').length > 2) {
+      return {
+        code : this.CANNOT_PARSE,
+        message : 'Could not understand your coordinate. Please separate x and y values with semicolon if you use comma as a decimal sign.'
+      }
+    }
+    if (coordinateString.split(',').length < 2 && coordinateString.split(';').length < 2) {
+      return {
+        code : this.WRONG_FORM,
+        message : 'Your expression does not seem to contain both x and y coordinates.'
+      }
+    }
+    else {
+      return {
+        code : this.WRONG_FORM,
+        message : 'Your input could not be interpreted. Please enter a coordinate in a valid form.'
+      }
+    }
+  }
+
+  return coordinates;
 }
