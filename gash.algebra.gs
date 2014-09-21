@@ -51,12 +51,14 @@ p.initialize = function() {
 /**
  * Parses an expression string, allowing Swedish notation and implicit multiplication.
  *
- * @TODO: Allow passing in more replacement patterns.
- *
  * @param {string} [expressionString= The expression to prepare.]
+ * @param {configObject} [options= Extra options to affect how pre-parsing is done.
+ *   swedishNotation : Set to true to allow comma as decimal sign. See gash.algebra.defaults.
+ *   replacements {object} : Set any extra replacements. {x : '(x+1)'} will replace all x with (x+1).
+ * ]
  * return {string}
 */
-function preParseExpression(expressionString, options) {
+p.preParseExpression = function(expressionString, options) {
   options = this.defaults.overwriteWith(options);
   expressionString = expressionString.toString();
 
@@ -90,6 +92,12 @@ function preParseExpression(expressionString, options) {
     };
   }
 
+  var n = +i;
+  for (var i in options.replacements) {
+    n++;
+    re[i + 'custom'] = {expr : i, repl : '<' + n + '>'};
+  }
+
   // Special case: The constant PI is understood by Parser, and should be replaced
   // to avoid treating the letters as an implicit multiplication.
   re.pi = {
@@ -118,6 +126,12 @@ function preParseExpression(expressionString, options) {
     };
   }
 
+  var n = +i;
+  for (var i in options.replacements) {
+    n++;
+    re[i + 'back'] = {expr : '<' + n + '>', repl : options.replacements[i]};
+  }
+
   // Apply the replacement rules.
   for (var i in re) {
     while (expressionString.replace(re[i].expr, re[i].repl) != expressionString) {
@@ -131,7 +145,8 @@ function preParseExpression(expressionString, options) {
 /**
  * Evaluates an expression, with variable values if supplied.
  *
- * If evaluation fails, for any reason, 'undefined' will be returned.
+ * If evaluation fails, for any reason, 'undefined' will be returned. (The standard error codes
+ * cannot be used, since they will be interpreted as numbers.)
  *
  * @param {string} [expressionString= The expression to evaluate.]
  * @param {object} [variables= any variables and their values, for example '{x : 3, y : 2}'.]
@@ -140,10 +155,16 @@ function preParseExpression(expressionString, options) {
  * ]
  * return {float}
  */
-p.evaluate = function(expressionString, variables, allowedOperators) {
+p.evaluate = function(expressionString, variables, options) {
+  options = this.defaults.overwriteWith(options);
   // Make sure we have sane arguments.
   if (typeof expressionString != 'string') {
-    return;
+    if (!isNaN(expressionString) && isFinite(expressionString)) {
+      expressionString = expressionString.toString();
+    }
+    else {
+      return;
+    }
   }
   if (typeof variables != 'object') {
     variables = {};
@@ -164,7 +185,10 @@ p.evaluate = function(expressionString, variables, allowedOperators) {
   // Evaluate! Since Parser may throw errors, we need a try statement.
   try {
     // Special handling if we should restrict allowed operators.
-    if (Array.isArray(allowedOperators)) {
+    if (typeof options.allowedOperators == 'string') {
+      options.allowedOperators = [options.allowedOperators];
+    }
+    if (Array.isArray(options.allowedOperators)) {
       var expr = Parser.parse(expressionString);
       // Manipulate ops1, ops2 and functions of the expression object.
       for (var op in {ops1 : 'ops1', ops2 : 'ops2', functions : 'functions'}) {
@@ -173,7 +197,7 @@ p.evaluate = function(expressionString, variables, allowedOperators) {
           if (op == 'ops1' && i == '-') {
             continue;
           }
-          if (allowedOperators.indexOf(i) < 0) {
+          if (options.allowedOperators.indexOf(i) < 0) {
             // We cannot delete the function, since it not a property. Instead we
             // set it to something awkward, which will fail evaluation if the
             // function is used.
@@ -226,12 +250,12 @@ p.compareExpressions = function(expression1, expression2, var1, var2, options) {
   }
   var x, vars1 = {}, vars2 = {}, val1, val2, tries = 0;
 
-  // Run five evaluations of random numbers between -5 and 5, to see if the expressions
-  // yield the same values. (Yes, this is an ugly way of comparing the expressions. But
-  // it is cheap and it works for the practical purposes.)
+  // Run some evaluations of random numbers to see if the expressions yield the same values.
+  // (Yes, this is an ugly way of comparing the expressions. But it is cheap and it works for
+  // the practical purposes.)
   for (var i = 0; i < options.randomTries; i++) {
     for (var v in var1) {
-      x = Math.random() * (options.maxRandom - options.minRandom) + options.MinRandom;
+      x = Math.random() * (options.maxRandom - options.minRandom) + options.minRandom;
       vars1[var1[v]] = x;
       vars2[var2[v]] = x;
     }
@@ -262,4 +286,73 @@ p.compareExpressions = function(expression1, expression2, var1, var2, options) {
   }
   // If we got this far, the expressions are most likely the same.
   return this.CORRECT;
+}
+
+/**
+ * Automatic tests for the algebra plugin.
+ */
+p.tests = {
+  // Assure some important aspects of preParseExpression.
+  preParseReplacements : function() {
+    if (gash.algebra.preParseExpression(2.1) != '2.1') {
+      throw 'preParseExpression does not accept number input.';
+    }
+    if (gash.algebra.preParseExpression('(2,1)') != '(2.1)') {
+      throw 'Comma as decimal sign does not work in parenthesis for preParseExpression.';
+    }
+    if (gash.algebra.preParseExpression('ab') != 'a*b') {
+      throw 'Implicit multiplication not working in preParseExpression.';
+    }
+    if (gash.algebra.preParseExpression('2asin(2x)') != '2*asin(2*x)') {
+      throw 'Preserving function notation not working in preParseExpression.';
+    }
+    if (gash.algebra.preParseExpression('2pi') != '2*PI') {
+      throw 'Implicit multiplication with pi not working.';
+    }
+    var options = new configObject({replacements : {a : 'b', b : 'a'}});
+    if (gash.algebra.preParseExpression('a+2b', options) != 'b+2*a') {
+      throw 'Advanced replacement rules in preParseExpression not working.';
+    }
+  },
+  // Assure some important aspects of expression evaluation engine.
+  evaluateEdgeCases : function() {
+    if (gash.algebra.evaluate(2.1) != 2.1) {
+      throw 'evaluate method does not accept number input.';
+    }
+    if (gash.algebra.evaluate('5x', {x : 2}) != 10) {
+      throw 'Variable values are not treated properly in evaluate().';
+    }
+    if (gash.algebra.evaluate('xy', {x : 2, y : 5}) != 10) {
+      throw 'Multiple variables are not treated properly in evaluate().';
+    }
+    var options = new configObject({allowedOperators : '/'});
+    if (gash.algebra.evaluate('1+2', {}, options) != undefined) {
+      throw 'Restrictions of allowed operators cannot be passed as strings to evaluate().';
+    }
+    var options = new configObject({allowedOperators : ['/', '+']});
+    if (gash.algebra.evaluate('2-1', {}, options) != undefined) {
+      throw 'Restrictions of allowed operators are not obeyed in evaluate().';
+    }
+  },
+  // Assure some important aspects of expression comparison engine.
+  compareExpressionsTests : function() {
+    if (gash.algebra.compareExpressions('2x', 'x+x') != gash.algebra.CORRECT) {
+      throw 'Expression comparison fails basic tests.';
+    }
+    if (gash.algebra.compareExpressions('2x', 'a+a', 'x', 'a') != gash.algebra.CORRECT) {
+      throw 'Expression comparison cannot handle different variables in the two expressions.';
+    }
+    if (gash.algebra.compareExpressions('2a+b', 'a+2b', ['a', 'b'], ['b', 'a']) != gash.algebra.CORRECT) {
+      throw 'Expression comparison cannot handle multiple different variables.';
+    }
+    if (gash.algebra.compareExpressions('a', 'b') != gash.algebra.CANNOT_INTERPRET) {
+      throw 'Expression comparison does not recognise that expressions are interpretable.';
+    }
+    if (gash.algebra.compareExpressions('a', '2a', 'a') != gash.algebra.INCORRECT) {
+      throw 'Expression comparison does not recognise that expressions not identical.';
+    }
+    if (gash.algebra.compareExpressions(1/79, '0.5/79 + 0.5/79') != gash.algebra.CORRECT) {
+      throw 'Expression comparison has fallen for rounding errors.';
+    }
+  },
 }
