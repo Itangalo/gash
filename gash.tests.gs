@@ -12,12 +12,21 @@ var p = new gashPlugin('tests');
 
 p.okMessages = {};
 p.errorMessages = {};
+p.runTests = false;
 
 /**
  * Page callback used when the test plugin is active.
  */
 p.doGet = function(queryParameters) {
   var app = UiApp.getActiveApplication();
+
+  // Shortcut the tests if they should not be run.
+  if (this.runTests != true) {
+    app.add(app.createLabel('The tests plugin is installed, but is not running tests. It should not be installed on a live environment.').setStyleAttribute('color', 'red'));
+    return;
+  }
+
+  // Run all tests and print out results.
   app.add(app.createLabel('Running tests...'));
   gash.tests.runTests();
 
