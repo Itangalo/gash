@@ -115,7 +115,6 @@ p.loadData = function(table, id) {
 p.searchData = function(table, searchProperties) {
   parseCom = cParseCom.getParsed(table, this.credentials);
   var response = parseCom.getObjectsByQuery(searchProperties).jObject();
-  Logger.log(response);
   return response.results;
 }
 
