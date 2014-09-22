@@ -65,7 +65,7 @@ p.randomSelect = function(values) {
 }
 
 /**
- * Replaces all occurances of the listed replacements, allowing switching of variables and 
+ * Replaces all occurances of the listed replacements, allowing switching of variables and
  * not breaking up large replacements by smaller ones.
  *
  * @param {string} [expression= The string to perform replacements on.]
@@ -108,6 +108,52 @@ p.advancedReplacements = function(expression, replacements) {
 }
 
 /**
+ * Deep-clones an objects of six common types. Note that this does NOT preserve instanceof.
+ *
+ * Solution taken from http://stackoverflow.com/a/728694/294262.
+ *
+ * @param {object} [obj= The object to clone.]
+ * return {object} [The clone.]
+ */
+p.clone = function(obj) {
+  var copy;
+
+  // Handle the 3 simple types, and null or undefined
+  if (null == obj || typeof obj != 'object') {
+    return obj;
+  }
+
+  // Handle Date
+  if (obj instanceof Date) {
+    copy = new Date();
+    copy.setTime(obj.getTime());
+    return copy;
+  }
+
+  // Handle Array
+  if (obj instanceof Array) {
+    copy = [];
+    for (var i = 0, len = obj.length; i < len; i++) {
+      copy[i] = this.clone(obj[i]);
+    }
+    return copy;
+  }
+
+  // Handle Object
+  if (obj instanceof Object) {
+    copy = {};
+    for (var attr in obj) {
+      if (obj.hasOwnProperty(attr)) {
+        copy[attr] = this.clone(obj[attr]);
+      }
+    }
+    return copy;
+  }
+
+  throw 'Unable to copy obj! Its type is not supported.';
+}
+
+/**
  * Tests for this plugin.
  */
 p.tests = {
@@ -138,6 +184,20 @@ p.tests = {
     }
     if (gash.utils.advancedReplacements('a+2bbaa', {a : 'b', b : 'a', aa : 'c'}) != 'b+2aac') {
       throw 'Advanced replacements allows shorter replacements to break larger ones.';
+    }
+  },
+  // Verify that cloning and deep cloning works as expected.
+  cloneTests : function() {
+    var obj = {'foo' : 'bar'};
+    var conf1 = new configObject({one : 1, two : 2, three : obj});
+    var conf2 =  gash.utils.clone(conf1);
+    // Could not find any way of preserving instanceof and doing deep cloning. :-(
+//    if ((conf2 instanceof configObject) == false) {
+//      throw 'Cloning does not preserve instanceof.';
+//    }
+    conf1.three.foo = 'baz';
+    if (conf2.three.foo == 'baz') {
+      throw 'Cloning does not implement deep cloning.';
     }
   }
 };
