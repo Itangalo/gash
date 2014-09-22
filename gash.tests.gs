@@ -14,18 +14,22 @@
 function doGet(e) {
   var app = UiApp.createApplication();
 
-  app.add(app.createLabel('Running tests...'));
-  gash.initialize(e);
-
-  for (var i in gash.tests.okMessages) {
-    for (var j in gash.tests.okMessages[i]) {
-      app.add(app.createLabel(gash.tests.okMessages[i][j]));
-    }
+  if (!gash.initialize(e)) {
+    return app;
   }
+
+  app.add(app.createLabel('Running tests...'));
+  gash.tests.runTests();
 
   for (var i in gash.tests.errorMessages) {
     for (var j in gash.tests.errorMessages[i]) {
       app.add(app.createLabel(gash.tests.errorMessages[i][j]).setStyleAttribute('color', 'red'));
+    }
+  }
+
+  for (var i in gash.tests.okMessages) {
+    for (var j in gash.tests.okMessages[i]) {
+      app.add(app.createLabel(gash.tests.okMessages[i][j]));
     }
   }
 
@@ -40,7 +44,7 @@ p.errorMessages = {};
 /**
  * Runs all tests declared by plugins and collects any thrown errors.
  */
-p.initialize = function() {
+p.runTests = function() {
   okMessages = this.okMessages;
   errorMessages = this.errorMessages;
   for (var i in gash.plugins) {

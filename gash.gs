@@ -41,11 +41,33 @@ var gash = (function () {
     }
     this.queryParameters = new configObject(parameters);
 
+    // Initialize all plugins, and verify that they start ok.
+    var response;
+    var errors = {};
     for (var i in plugins) {
-      if (!gash[plugins[i]].initialize(this.queryParameters)) {
-        throw 'Could not initalize plugin ' + plugins[i];
+      // The response should be 'true', or something is wrong.
+      response = gash[plugins[i]].initialize(this.queryParameters);
+      if (response != true) {
+        if (typeof response == 'string') {
+          errors[plugins[i]] = response;
+        }
+        else {
+          errors[plugins[i]] = 'Could not initalize plugin ' + plugins[i];
+        }
       }
     }
+
+    // If we have any errors, print them out and return false. The caller should abort the page request.
+    if (Object.keys(errors).length > 0) {
+      var app = UiApp.getActiveApplication();
+      app.add(app.createLabel('Errors initializing gash:'));
+      for (var i in errors) {
+        app.add(app.createLabel('Plugin ' + i + ': ' + errors[i]));
+      }
+      return false;
+    }
+
+    return true;
   }
 
   return {
