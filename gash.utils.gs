@@ -108,6 +108,51 @@ p.advancedReplacements = function(expression, replacements) {
 }
 
 /**
+ * Recursively merge properties of two objects. Any properties that exists in obj2 are written into obj1.
+ *
+ * Code taken from http://stackoverflow.com/a/383245/294262.
+ */
+p.mergeRecursive = function(obj1, obj2) {
+  obj1 = this.deepClone(obj1);
+  for (var p in obj2) {
+    try {
+      // Property in destination object set; update its value.
+      if (obj2[p].constructor == Object) {
+        obj1[p] = this.mergeRecursive(obj1[p], obj2[p]);
+      } else {
+        obj1[p] = obj2[p];
+      }
+    } catch(e) {
+      // Property in destination object not set; create it and set its value.
+      obj1[p] = obj2[p];
+    }
+  }
+  return obj1;
+}
+
+/**
+ * Checks if a given string is a valid url or not.
+ *
+ * Code taken from http://stackoverflow.com/a/14582229/294262.
+ *
+ * @param {string} [str= The string check.]
+ * return {boolean}
+ */
+p.isValidUrl = function(str) {
+  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+  '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+  '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+  '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+  if(!pattern.test(str)) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+/**
  * Clones an object, preserving its instance. Note that this does NOT clone any objects in properties.
  *
  * Solution taken from http://stackoverflow.com/a/728694/294262.
@@ -217,5 +262,17 @@ p.tests = {
     if ((conf2 instanceof configObject) == false) {
       throw 'instanceClone does not preserve instanceof.';
     }
-  }
+  },
+  // Test some url recognizing.
+  urlTests : function() {
+    if (gash.utils.isValidUrl('foo')) {
+      throw 'Plain strings are interpreted as url:s';
+    }
+    if (!gash.utils.isValidUrl('http://example.com')) {
+      throw 'Url:s are not recognized.';
+    }
+    if (!gash.utils.isValidUrl('example.com')) {
+      throw 'Domain names are not recognized as url:s.';
+    }
+  },
 };
