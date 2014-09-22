@@ -108,6 +108,23 @@ p.advancedReplacements = function(expression, replacements) {
 }
 
 /**
+ * Clones an object, preserving its instance. Note that this does NOT clone any objects in properties.
+ *
+ * Solution taken from http://stackoverflow.com/a/728694/294262.
+ *
+ * @param {object} [obj= The object to clone.]
+ * return {object} [The clone.]
+ */
+p.instanceClone = function(obj) {
+  if (null == obj || "object" != typeof obj) return obj;
+  var copy = obj.constructor();
+  for (var attr in obj) {
+    if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+  }
+  return copy;
+}
+
+/**
  * Deep-clones an objects of six common types. Note that this does NOT preserve instanceof.
  *
  * Solution taken from http://stackoverflow.com/a/728694/294262.
@@ -115,7 +132,7 @@ p.advancedReplacements = function(expression, replacements) {
  * @param {object} [obj= The object to clone.]
  * return {object} [The clone.]
  */
-p.clone = function(obj) {
+p.deepClone = function(obj) {
   var copy;
 
   // Handle the 3 simple types, and null or undefined
@@ -144,7 +161,7 @@ p.clone = function(obj) {
     copy = {};
     for (var attr in obj) {
       if (obj.hasOwnProperty(attr)) {
-        copy[attr] = this.clone(obj[attr]);
+        copy[attr] = this.deepClone(obj[attr]);
       }
     }
     return copy;
@@ -190,14 +207,15 @@ p.tests = {
   cloneTests : function() {
     var obj = {'foo' : 'bar'};
     var conf1 = new configObject({one : 1, two : 2, three : obj});
-    var conf2 =  gash.utils.clone(conf1);
+    var conf2 =  gash.utils.deepClone(conf1);
     // Could not find any way of preserving instanceof and doing deep cloning. :-(
-//    if ((conf2 instanceof configObject) == false) {
-//      throw 'Cloning does not preserve instanceof.';
-//    }
     conf1.three.foo = 'baz';
     if (conf2.three.foo == 'baz') {
-      throw 'Cloning does not implement deep cloning.';
+      throw 'deepCloning does not implement deep cloning.';
+    }
+    conf2 = gash.utils.instanceClone(conf1);
+    if ((conf2 instanceof configObject) == false) {
+      throw 'instanceClone does not preserve instanceof.';
     }
   }
 };
