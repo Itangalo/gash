@@ -12,6 +12,7 @@
  * The entry point for page callbacks.
  */
 function doGet(queryInfo) {
+  queryInfo = queryInfo || {}; // Allows running the doGet function without an actual page call.
   var app = UiApp.createApplication();
 
   // Initialize all plugins, and make sure they are ok.
@@ -94,11 +95,16 @@ var gash = (function () {
    * return {}
    */
   function invokeAll(method, argument) {
+    var result = {};
     for (var i in plugins) {
       if (typeof this[plugins[i]][method] == 'function') {
-        this[plugins[i]][method](argument);
+        result[plugins[i]] = this[plugins[i]][method](argument);
+      }
+      else if (typeof this[plugins[i]][method] == 'object') {
+        result[plugins[i]] = this[plugins[i]][method];
       }
     }
+    return result;
   }
 
   return {
