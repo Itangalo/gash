@@ -13,13 +13,13 @@
  */
 var gash = (function () {
   // Public variables
-  var plugins = [];
-  var queryParameters;
-  var apiVersion = 1;
+  var plugins = []; // Array with names of all plugins.
+  var queryParameters; // configObject with page query parameters.
+  var apiVersion = 2;
   var subVersion = 1;
 
   /**
-   * Makes query parameters globally available (for good and bad).
+   * Makes query parameters globally available (for good and bad) and initializes plugins.
    *
    * @param {object} [queryInfo= The query info, as passed to the doGet() function.]
    * return {}
