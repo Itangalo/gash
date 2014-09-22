@@ -8,16 +8,16 @@
  * source code and license details.
  */
 
+var p = new gashPlugin('tests');
+
+p.okMessages = {};
+p.errorMessages = {};
+
 /**
  * Page callback used when the test plugin is active.
  */
-function doGet(e) {
-  var app = UiApp.createApplication();
-
-  if (!gash.initialize(e)) {
-    return app;
-  }
-
+p.doGet = function(queryParameters) {
+  var app = UiApp.getActiveApplication();
   app.add(app.createLabel('Running tests...'));
   gash.tests.runTests();
 
@@ -32,14 +32,7 @@ function doGet(e) {
       app.add(app.createLabel(gash.tests.okMessages[i][j]));
     }
   }
-
-  return app;
 }
-
-var p = new gashPlugin('tests');
-
-p.okMessages = {};
-p.errorMessages = {};
 
 /**
  * Runs all tests declared by plugins and collects any thrown errors.

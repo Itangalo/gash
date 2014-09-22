@@ -9,6 +9,22 @@
  */
 
 /**
+ * The entry point for page callbacks.
+ */
+function doGet(queryInfo) {
+  var app = UiApp.createApplication();
+
+  // Initialize all plugins, and make sure they are ok.
+  if (!gash.initialize(queryInfo)) {
+    return app;
+  }
+
+  // Call all doGet functions in the plugins.
+  gash.invokeAll('doGet', queryInfo);
+  return app;
+}
+
+/**
  * The main module for gash. See example files for how to use gash.
  */
 var gash = (function () {
@@ -46,7 +62,7 @@ var gash = (function () {
     var errors = {};
     for (var i in plugins) {
       // The response should be 'true', or something is wrong.
-      response = gash[plugins[i]].initialize(this.queryParameters);
+      response = this[plugins[i]].initialize(this.queryParameters);
       if (response != true) {
         if (typeof response == 'string') {
           errors[plugins[i]] = response;
@@ -70,6 +86,21 @@ var gash = (function () {
     return true;
   }
 
+  /**
+   * Calls the given method in all plugins that implement it.
+   *
+   * @param {string} [method= The name of the method.]
+   * @param {object} [argument= Any argument to pass to the method.]
+   * return {}
+   */
+  function invokeAll(method, argument) {
+    for (var i in plugins) {
+      if (typeof this[plugins[i]][method] == 'function') {
+        this[plugins[i]][method](argument);
+      }
+    }
+  }
+
   return {
     // Properties
     plugins : plugins,
@@ -78,9 +109,9 @@ var gash = (function () {
     subVersion : subVersion,
     // Methods
     initialize : initialize,
+    invokeAll : invokeAll,
   };
 }) ();
-
 
 /**
  * Class for gash plugins.
