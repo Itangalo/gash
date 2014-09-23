@@ -10,6 +10,13 @@
 
 var p = new gashPlugin('math');
 
+p.apiVersion = 1;
+p.subVersion = 1;
+p.dependencies = {
+  gash : {apiVersion : 2, subVersion : 1},
+  utils : {apiVersion : 1, subVersion : 1},
+};
+
 /**
  * Configuration object with default settings for gash.math.
  *
