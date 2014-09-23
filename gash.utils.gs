@@ -153,6 +153,31 @@ p.isValidUrl = function(str) {
 }
 
 /**
+ * Builds a url to the current script, optionally with fragments append.
+ *
+ * Code taken from http://stackoverflow.com/a/14582229/294262.
+ *
+ * @param {object} [fragments= Query fragments to append to the url, given in the form {key : 'value'}. Values may be arrays.]
+ * return {string}
+ */
+p.getCurrentUrl = function(fragments) {
+  var url = ScriptApp.getService().getUrl();
+  var append = '';
+  for (var i in fragments) {
+    if (Array.isArray(fragments[i])) {
+      fragments[i] = fragments[i].join(',');
+    }
+    append += '&' + i + '=' + fragments[i]
+  }
+  append = append.split('');
+  if (append.length > 0) {
+    append[0] = '?';
+  }
+  append = append.join('');
+  return url + append;
+}
+
+/**
  * Clones an object, preserving its instance. Note that this does NOT clone any objects in properties.
  *
  * Solution taken from http://stackoverflow.com/a/728694/294262.
@@ -264,7 +289,7 @@ p.tests = {
     }
   },
   // Test some url recognizing.
-  urlTests : function() {
+  urlRecognitionTests : function() {
     if (gash.utils.isValidUrl('foo')) {
       throw 'Plain strings are interpreted as url:s';
     }
@@ -273,6 +298,20 @@ p.tests = {
     }
     if (!gash.utils.isValidUrl('example.com')) {
       throw 'Domain names are not recognized as url:s.';
+    }
+  },
+  // Test some url recognizing.
+  urlBuildTests : function() {
+    if (gash.utils.getCurrentUrl().substring(0, 4) != 'http') {
+      throw 'getCurrentUrl does not return a sane url.';
+    }
+    var url = gash.utils.getCurrentUrl({foo : 'bar'});
+    if (url.substring(substring.length, substring.length - 8) != '?foo=bar') {
+      throw 'getCurrentUrl does not append query fragments correctly.';
+    }
+    url = gash.utils.getCurrentUrl({foo : ['bar', 'baz']});
+    if (url.substring(substring.length, substring.length - 12) != '?foo=bar,baz') {
+      throw 'getCurrentUrl does not append array query fragments correctly.';
     }
   },
 };
