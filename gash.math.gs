@@ -32,7 +32,9 @@ p.defaults = new configObject({
   maxCoefficient : 3,
   randomVariables : {x : 5, y : 2, s : 1, t : 1, a : 1, b : 1, r : 1},
   latexDpi : '150',
-  latexFont : '\\fn_jvn',
+//  latexFont : '\\fn_jvn', // Verdana
+//  latexFont : '\\fn_cs', // Comic sans
+  latexFont : '', // Latin modern (default)
   swedishNotation : true,
 });
 
