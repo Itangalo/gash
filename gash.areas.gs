@@ -33,6 +33,13 @@ p.defaults = new configObject({
 p.areas = [];
 
 /**
+ * Builds the areas on page loads.
+ */
+p.doGet = function(queryParameters) {
+  gash.areas.buildAreas();
+}
+
+/**
  * Finds all declared areas and adds them to the active UI.
  *
  * return {}
@@ -65,7 +72,7 @@ p.buildAreas = function() {
 }
 
 /**
- * Initializes a UI area. The actual drawing is done by gash.area.buildAreas().
+ * Class for gash areas, initializing the area. The actual drawing is done by gash.area.buildAreas().
  *
  * @param {string} [id= The unique id of this area.]
  * @param {configObject} [options= Any options, overriding gash.areas.defaults.]
