@@ -247,6 +247,23 @@ p.deepClone = function(obj) {
 }
 
 /**
+ * Restructures an object, grouping all properties that share a selected property together.
+ *
+ * @param {object} [list= A list of objects, which all have the groupProperty.]
+ * return {object} [The regrouped list, as an object.]
+ */
+p.groupByProperty = function(list, groupProperty) {
+  var regrouped = {};
+  for (var i in list) {
+    if (regrouped[list[i][groupProperty]] == undefined) {
+      regrouped[list[i][groupProperty]] = {};
+    }
+    regrouped[list[i][groupProperty]][i] = list[i];
+  }
+  return regrouped;
+}
+
+/**
  * Tests for this plugin.
  */
 p.tests = {
@@ -318,6 +335,13 @@ p.tests = {
     url = gash.utils.getCurrentUrl({foo : ['bar', 'baz']});
     if (url.substring(substring.length, substring.length - 12) != '?foo=bar,baz') {
       throw 'getCurrentUrl does not append array query fragments correctly.';
+    }
+  },
+  // Test the grouping of objects.
+  groupByPropertyTest : function() {
+    var list = {o1 : {name : 'Bill', group : 'blue'}, o2 : {name : 'Sven', group : 'black'}, o3 : {name : 'Ingrid', group : 'blue'}};
+    if (Object.keys(gash.utils.groupByProperty(list, 'group').blue).length != 2) {
+      throw 'Grouping by property is broken.';
     }
   },
 };
