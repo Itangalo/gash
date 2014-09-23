@@ -10,6 +10,12 @@
 
 var p = new gashPlugin('utils');
 
+p.apiVersion = 1;
+p.subVersion = 1;
+p.dependencies = {
+  gash : {apiVersion : 2, subVersion : 1},
+};
+
 /**
  * Builds random integers in a given range, excluding selected numbers.
  *
