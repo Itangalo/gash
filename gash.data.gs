@@ -11,6 +11,12 @@
 
 var p = new gashPlugin('data');
 
+p.apiVersion = 1;
+p.subVersion = 1;
+p.dependencies = {
+  gash : {apiVersion : 2, subVersion : 1},
+};
+
 p.initialize = function() {
   try {
     var parseCom = cParseCom.getParsed('ping', this.credentials);
