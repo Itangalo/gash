@@ -60,22 +60,27 @@ var gash = (function () {
 
     // Verify that all plugins have dependencies met.
     var errors = {};
+    var reqApi, reqSub, gotApi, gotSub;
     for (var i in plugins) {
-      for (var j in gash[plugins[i]].dependencies) {
+      for (var j in this[plugins[i]].dependencies) {
+        reqApi = this[plugins[i]].dependencies[j].apiVersion;
+        reqSub = this[plugins[i]].dependencies[j].subVersion;
         if (j == 'gash') {
-          if (gash[plugins[i]].dependencies.apiVersion != gash.apiVersion || gash[plugins[i]].dependencies.subVersion <= gash.subVersion) {
-            errors[plugins[i] + ' dependency'] = 'Requires version ' + gash[plugins[i]].dependencies.apiVersion + '.' + gash[plugins[i]].dependencies.subVersion + ' (got ' + gash.apiVersion + '.' + gash.subVersion + ')';
-          }
-        }
-        else {
-          if (gash[j] instanceof gashPlugin) {
-            if (gash[plugins[i]].dependencies.apiVersion != gash[j].apiVersion || gash[plugins[i]].dependencies.subVersion <= gash[j].subVersion) {
-              errors[plugins[i] + ' dependency'] = 'Requires version ' + gash[plugins[i]].dependencies.apiVersion + '.' + gash[plugins[i]].dependencies.subVersion + ' (got ' + gash[j].apiVersion + '.' + gash[j].subVersion + ')';
-            }
+          gotApi = this.apiVersion;
+          gotSub = this.subVersion;
+        } else {
+          if (this[j] instanceof gashPlugin) {
+            gotApi = this[j].apiVersion;
+            gotSub = this[j].subVersion;
           }
           else {
-            errors[plugins[i] + ' dependency'] = 'Requires version ' + gash[plugins[i]].dependencies.apiVersion + '.' + gash[plugins[i]].dependencies.subVersion + ' (plugin missing)';
+            gotApi = false;
+            gotSub = false;
+            errors[plugins[i] + ' dependency'] = 'Requires version ' + reqApi + '.' + reqSub + ' of ' + j + ' (plugin missing)';
           }
+        }
+        if (reqApi != gotApi || reqSub > gotSub && gotApi) {
+          errors[plugins[i] + ' dependency'] = 'Requires version ' + reqApi + '.' + reqSub + ' of ' + j + ' (got ' + gotApi + '.' + gotSub + ')';
         }
       }
     }
@@ -154,6 +159,7 @@ function gashPlugin(id) {
     throw 'Cannot add plugin ' + id + ': Name is taken.';
   }
 
+  // Set some required properties.
   this.id = id;
   this.apiVersion = 0; // Must be overwritten by plugin.
   this.subVersion = 0; // Must be overwritten by plugin.
@@ -163,6 +169,7 @@ function gashPlugin(id) {
 
   gash[id] = this;
   gash.plugins.push(id);
+
 
   return this;
 }
