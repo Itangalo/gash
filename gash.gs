@@ -58,28 +58,49 @@ var gash = (function () {
     }
     this.queryParameters = new configObject(parameters);
 
+    // Verify that all plugins have dependencies met.
+    var errors = {};
+    for (var i in plugins) {
+      for (var j in gash[plugins[i]].dependencies) {
+        if (j == 'gash') {
+          if (gash[plugins[i]].dependencies.apiVersion != gash.apiVersion || gash[plugins[i]].dependencies.subVersion <= gash.subVersion) {
+            errors[plugins[i] + ' dependency'] = 'Requires version ' + gash[plugins[i]].dependencies.apiVersion + '.' + gash[plugins[i]].dependencies.subVersion + ' (got ' + gash.apiVersion + '.' + gash.subVersion + ')';
+          }
+        }
+        else {
+          if (gash[j] instanceof gashPlugin) {
+            if (gash[plugins[i]].dependencies.apiVersion != gash[j].apiVersion || gash[plugins[i]].dependencies.subVersion <= gash[j].subVersion) {
+              errors[plugins[i] + ' dependency'] = 'Requires version ' + gash[plugins[i]].dependencies.apiVersion + '.' + gash[plugins[i]].dependencies.subVersion + ' (got ' + gash[j].apiVersion + '.' + gash[j].subVersion + ')';
+            }
+          }
+          else {
+            errors[plugins[i] + ' dependency'] = 'Requires version ' + gash[plugins[i]].dependencies.apiVersion + '.' + gash[plugins[i]].dependencies.subVersion + ' (plugin missing)';
+          }
+        }
+      }
+    }
+
     // Initialize all plugins, and verify that they start ok.
     var response;
-    var errors = {};
     for (var i in plugins) {
       // The response should be 'true', or something is wrong.
       response = this[plugins[i]].initialize(this.queryParameters);
       if (response != true) {
         if (typeof response == 'string') {
-          errors[plugins[i]] = response;
+          errors['Initializing ' + plugins[i]] = response;
         }
         else {
-          errors[plugins[i]] = 'Could not initalize plugin ' + plugins[i];
+          errors['Initializing ' + plugins[i]] = 'Could not initalize plugin ' + plugins[i];
         }
       }
     }
 
-    // If we have any errors, print them out and return false. The caller should abort the page request.
+    // If we have any errors, print them out and return false. The aborts the page request.
     if (Object.keys(errors).length > 0) {
       var app = UiApp.getActiveApplication();
       app.add(app.createLabel('Errors initializing gash:'));
       for (var i in errors) {
-        app.add(app.createLabel('Plugin ' + i + ': ' + errors[i]));
+        app.add(app.createLabel(i + ': ' + errors[i]));
       }
       return false;
     }
@@ -132,6 +153,14 @@ function gashPlugin(id) {
   if (gash[id] !== undefined) {
     throw 'Cannot add plugin ' + id + ': Name is taken.';
   }
+
+  this.id = id;
+  this.apiVersion = 0; // Must be overwritten by plugin.
+  this.subVersion = 0; // Must be overwritten by plugin.
+  this.dependencies = {
+    gash : {apiVersion : 2, subVersion : 1},
+  };
+
   gash[id] = this;
   gash.plugins.push(id);
 
