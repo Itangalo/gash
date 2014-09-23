@@ -10,6 +10,12 @@
 
 var p = new gashPlugin('tests');
 
+p.apiVersion = 1;
+p.subVersion = 1;
+p.dependencies = {
+  gash : {apiVersion : 2, subVersion : 1},
+};
+
 p.okMessages = {};
 p.errorMessages = {};
 p.diableTesting = true;
