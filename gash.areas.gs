@@ -14,7 +14,7 @@ var p = new gashPlugin('areas');
  * Default configuration for areas.
  */
 p.defaults = new configObject({
-  areaAttributes : {},
+  areaAttributes : {overflow : 'auto'},
   scrollAttributes : {},
   containerAttributes : {},
   elementAttributes : {},
@@ -34,16 +34,24 @@ p.buildAreas = function() {
   var id;
   var app = UiApp.getActiveApplication();
 
-  options = this.defaults;
+  var options;
   for (var i in this.areas) {
     id = this.areas[i];
+    options = this[id].defaults;
     // Merge any custom options declared by the plugins with default configuration,
     // then add the panels constituting the area.
     var captionPanel = app.createCaptionPanel(options.label || '').setId(id + '-wrapper').setStyleAttributes(options.areaAttributes);
     var scrollPanel = app.createScrollPanel().setId(id + '-scroll').setStyleAttributes(options.scrollAttributes);
-    var container = app.createVerticalPanel().setId(id).setStyleAttributes(options.containerAttributes);
-    captionPanel.add(scrollPanel);
-    scrollPanel.add(container);
+    if (options.horizontal == true) {
+      var container = app.createHorizontalPanel().setId(id).setStyleAttributes(options.containerAttributes);
+    }
+    else if (options.vertical == true) {
+      var container = app.createVerticalPanel().setId(id).setStyleAttributes(options.containerAttributes);
+    }
+    else {
+      var container = app.createFlowPanel().setId(id).setStyleAttributes(options.containerAttributes);
+    }
+    captionPanel.add(container);
     app.add(captionPanel);
   }
   return;
