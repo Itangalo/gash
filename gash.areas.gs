@@ -57,13 +57,13 @@ p.buildAreas = function() {
     var captionPanel = app.createCaptionPanel(options.label || '').setId(id + '-wrapper').setStyleAttributes(options.areaAttributes);
     var scrollPanel = app.createScrollPanel().setId(id + '-scroll').setStyleAttributes(options.scrollAttributes);
     if (options.horizontal == true) {
-      var container = app.createHorizontalPanel().setId(id).setStyleAttributes(options.containerAttributes);
+      var container = app.createHorizontalPanel().setId(id + '-area').setStyleAttributes(options.containerAttributes);
     }
     else if (options.vertical == true) {
-      var container = app.createVerticalPanel().setId(id).setStyleAttributes(options.containerAttributes);
+      var container = app.createVerticalPanel().setId(id + '-area').setStyleAttributes(options.containerAttributes);
     }
     else {
-      var container = app.createFlowPanel().setId(id).setStyleAttributes(options.containerAttributes);
+      var container = app.createFlowPanel().setId(id + '-area').setStyleAttributes(options.containerAttributes);
     }
     captionPanel.add(container);
     app.add(captionPanel);
@@ -103,7 +103,7 @@ function gashArea(id, options) {
 gashArea.prototype.add = function(element, options) {
   options = gash.utils.mergeRecursive(this.defaults.elementAttributes, options);
   var app = UiApp.getActiveApplication();
-  var container = app.getElementById(this.id);
+  var container = app.getElementById(this.id + '-area');
   if (typeof element == 'string') {
     if (gash.utils.isValidUrl(element)) {
       element = app.createAnchor(element, element);
@@ -127,6 +127,6 @@ gashArea.prototype.add = function(element, options) {
  */
 gashArea.prototype.clear = function() {
   var app = UiApp.getActiveApplication();
-  container = app.getElementById(this.id).clear();
+  container = app.getElementById(this.id + '-area').clear();
   return this;
 }
