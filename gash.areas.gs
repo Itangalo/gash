@@ -98,7 +98,6 @@ function gashArea(id, options) {
  *
  * @param {UiElement} [element= A UI element for GAS, or a string.
  *   A string will be added as a link if it is a valid url, otherwise as a plain label.
- *   A string ending with double spaces will give a line break after the label/anchor.]
  * @param {configObject} [options= Any options, overriding the defaults for this area.]
  * return {gashArea}
  */
@@ -107,18 +106,11 @@ gashArea.prototype.add = function(element, options) {
   var app = UiApp.getActiveApplication();
   var container = app.getElementById(this.id + '-area');
   if (typeof element == 'string') {
-    var inline = true;
-    if (element.substring(element.length - 2, element.length) == '  ') {
-      inline = false;
-    }
     if (gash.utils.isValidUrl(element)) {
-      element = app.createAnchor(element.trim(), element.trim());
+      element = app.createAnchor(element, element);
     }
     else {
-      element = app.createLabel(element.trim());
-    }
-    if (inline) {
-      element.setStyleAttribute('display', 'inline');
+      element = app.createLabel(element);
     }
   }
   container.add(element);
