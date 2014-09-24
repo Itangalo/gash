@@ -31,7 +31,7 @@ function doGet(queryInfo) {
 var gash = (function () {
   // Public variables
   var plugins = []; // Array with names of all plugins.
-  var queryParameters; // configObject with page query parameters.
+  var queryParameters = new configObject({}); // configObject with page query parameters.
   var apiVersion = 2;
   var subVersion = 1;
 
