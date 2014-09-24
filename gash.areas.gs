@@ -55,11 +55,16 @@ p.buildAreas = function() {
     // Merge any custom options declared by the plugins with default configuration,
     // then add the panels constituting the area.
     var captionPanel = app.createCaptionPanel(options.label || '').setId(id + '-wrapper').setStyleAttributes(options.areaAttributes);
-    var scrollPanel = app.createScrollPanel().setId(id + '-scroll').setStyleAttributes(options.scrollAttributes);
-    if (options.horizontal == true) {
+    if (options.type == 'form') {
+      var scrollPanel = app.createFormPanel().setId(id + '-scroll').setStyleAttributes(options.scrollAttributes);
+    }
+    else {
+      var scrollPanel = app.createScrollPanel().setId(id + '-scroll').setStyleAttributes(options.scrollAttributes);
+    }
+    if (options.type == 'horizontal') {
       var container = app.createHorizontalPanel().setId(id + '-area').setStyleAttributes(options.containerAttributes);
     }
-    else if (options.vertical == true) {
+    else if (options.type == 'vertical') {
       var container = app.createVerticalPanel().setId(id + '-area').setStyleAttributes(options.containerAttributes);
     }
     else {
@@ -75,7 +80,11 @@ p.buildAreas = function() {
  * Class for gash areas, initializing the area. The actual drawing is done by gash.area.buildAreas().
  *
  * @param {string} [id= The unique id of this area.]
- * @param {configObject} [options= Any options, overriding gash.areas.defaults.]
+ * @param {configObject} [options= Any options, overriding gash.areas.defaults. Includes:
+ *   type: If set to horizontal, vertical or form, the area will be a panel of that type (instead of flow panel).
+ *   wrapperAttributes, scrollAttributes, containerAttributes: Style attributes added to the respective panel.
+ *   elementAttributes: Style attributes that will be default on new objects added to the panel.
+ * ]
  * return {gashArea}
  */
 function gashArea(id, options) {
