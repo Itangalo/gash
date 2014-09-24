@@ -96,7 +96,9 @@ function gashArea(id, options) {
 /**
  * Adds a UI element to an area.
  *
- * @param {UiElement} [element= A UI element for GAS, or a string. A url string will be added as a link, otherwise as a plain label.]
+ * @param {UiElement} [element= A UI element for GAS, or a string.
+ *   A string will be added as a link if it is a valid url, otherwise as a plain label.
+ *   A string ending with double spaces will give a line break after the label/anchor.]
  * @param {configObject} [options= Any options, overriding the defaults for this area.]
  * return {gashArea}
  */
@@ -105,11 +107,18 @@ gashArea.prototype.add = function(element, options) {
   var app = UiApp.getActiveApplication();
   var container = app.getElementById(this.id + '-area');
   if (typeof element == 'string') {
+    var inline = true;
+    if (element.substring(element.length - 2, element.length) == '  ') {
+      inline = false;
+    }
     if (gash.utils.isValidUrl(element)) {
-      element = app.createAnchor(element, element);
+      element = app.createAnchor(element.trim(), element.trim());
     }
     else {
-      element = app.createLabel(element);
+      element = app.createLabel(element.trim());
+    }
+    if (inline) {
+      element.setStyleAttribute('display', 'inline');
     }
   }
   container.add(element);
