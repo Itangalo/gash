@@ -145,16 +145,24 @@ p.mergeRecursive = function(obj1, obj2) {
  * return {boolean}
  */
 p.isValidUrl = function(str) {
-  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-  '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-  '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-  '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-  if(!pattern.test(str)) {
-    return false;
-  } else {
+// This pattern recognition breaks down with some standard strings.  
+//  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+//  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+//  '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+//  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+//  '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+//  '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+//  pattern = new RegExp('/((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[\\w]*))?)/', 'i');
+//  if(!pattern.test(str)) {
+//    return false;
+//  } else {
+//    return true;
+//  }
+  if (str.substring(0, 7) == 'http://' || str.substring(0, 8) == 'https://') {
     return true;
+  }
+  else {
+    return false;
   }
 }
 
