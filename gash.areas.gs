@@ -115,11 +115,17 @@ gashArea.prototype.add = function(element, options) {
   var app = UiApp.getActiveApplication();
   var container = app.getElementById(this.id + '-area');
   if (typeof element == 'string') {
-    if (gash.utils.isValidUrl(element)) {
-      element = app.createAnchor(element, element);
+    var url = element.trim();
+    var style = {};
+    if (element.substring(element.length - 2, element.length) != '  ') {
+      style = {display : 'inline'};
+      element = element.trim() + ' ';
+    }
+    if (gash.utils.isValidUrl(url)) {
+      element = app.createAnchor(element, url).setStyleAttributes(style);
     }
     else {
-      element = app.createLabel(element);
+      element = app.createHTML(element).setStyleAttributes(style);
     }
   }
   container.add(element);
