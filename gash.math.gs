@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 1;
+p.subVersion = 2;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -132,9 +132,11 @@ p.gcd = function(a, b) {
  *   mode : Set to 'straight' to only use 'ax + b'. Set to 'reverse' to only use 'a + bx'. Defaults to random between the two.
  *   maxDenominator : Determines maximum allowed denominator in coefficients. See gash.math.defaults.
  *   variable : The name of the variable to use. See gash.math.defaults.
+ *   a, b : The coefficient/constant in the binomial 'ax + b'. Used if you want to force a value.
  * ]
  * return {object} [An object with two properties:
- *   expression: A string with the expression, with coefficients given as floats.
+ *   expression: A string with the expression, with coefficients given as floats. (Good for calculations.)
+ *   plainText: A string with the expression, adapted for human readability.
  *   latex: A string with a LaTeX expression, prettified and represented as a fraction if possible.
  * ]
  */
@@ -144,11 +146,12 @@ p.randomBinomial = function(min, max, options) {
   var variable = options.variable || gash.utils.randomSelect(options.randomVariables);
   var mode = options.mode || gash.utils.randomSelect(['straight', 'reverse']);
   var frac = this.randomFraction(min, max, [0], options.maxDenominator);
-  var a = frac.n / frac.d;
+  var a = options.a || frac.n / frac.d;
   frac = this.randomFraction(min, max, [0], options.maxDenominator);
-  var b = frac.n / frac.d;
+  var b = options.b || frac.n / frac.d;
 
   var latex = '';
+  var plainText = '';
   var expression = '';
   var keepOnes = new configObject({maxDenominator : maxDenominator});
   var skipOnes = new configObject({maxDenominator : maxDenominator, skipOnes : true});
@@ -175,8 +178,14 @@ p.randomBinomial = function(min, max, options) {
       }
       break;
   }
+  plainText = latex.replace(/\\frac\{/g, '');
+  plainText = plainText.replace(/\}\{/g, '/');
+  plainText = plainText.replace('}' + variable, '*' + variable);
+  plainText = plainText.replace(/\}/g,'');
+
   return {
     expression : expression,
+    plainText : plainText,
     latex : latex
   };
 }
@@ -372,6 +381,11 @@ p.tests = {
     binomial = gash.math.randomBinomial(-.4, -.3, options);
     if (binomial.latex != '\\frac{-1}{3}-\\frac{1}{3}z') {
       throw 'randomBinomial does not use negative coefficients correctly.';
+    }
+    options = {a : 2/3, b : 1/9, mode : 'straight', variable : 'x'};
+    binomial = gash.math.randomBinomial(undefined, undefined, options);
+    if (binomial.plainText != '2/3*x+1/9') {
+      throw 'randomBinomial does not create plainText strings correctly.';
     }
   },
   // Verifies basic functionality in latexFraction.
