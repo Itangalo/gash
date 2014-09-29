@@ -86,24 +86,46 @@ p.randomFraction = function(min, max, disallowed, maxDenominator) {
  *
  * @param {float} [a= A numeric value that should be converted to a fraction.]
  * @param {integer} [maxDenominator= The largest denominator to try. See gash.math.defaults.]
- * return {object} [An object with properties n (nominator) and d (denominator). If no matching fraction is found, denominator is 1 and nominator is set to the input number.]
+ * return {object} [An object with the following properties:
+ *   d : The denominator of the fraction. Set to 1 if no fraction is found within the limit.
+ *   n : The nominator of the fraction. Set to the input number if no fraction is found within the limit.
+ *   plainText : A human-readable fraction, such as '1/2' or '9/4'.
+ *   noOnes : The same as plainText, except when the fraction is ±1. Then this is '' or '-'.]
  */
 p.findFraction = function(a, maxDenominator) {
   a = parseFloat(a);
   maxDenominator = parseInt(maxDenominator || this.defaults.maxSearchDenominator);
-  var denominator = 1;
+  var denominator = 1, plainText, noOnes;
   while (denominator <= maxDenominator) {
     if (Math.round(a * denominator) == (a * denominator).toFixed(this.defaults.precision)) {
+      plainText = Math.round(a * denominator);
+      noOnes = Math.round(a * denominator);
+      if (denominator == 1) {
+        if (a == 1) {
+          noOnes = '';
+        }
+        else if (a == -1) {
+          noOnes = '-';
+        }
+      }
+      else {
+        plainText += '/' + denominator;
+        noOnes += '/' + denominator;
+      }
       return {
         n : Math.round(a * denominator),
         d : denominator,
+        plainText : plainText,
+        noOnes : noOnes
       }
     }
     denominator++;
   }
   return {
     n : a,
-    d : 1
+    d : 1,
+    plainText : a,
+    noOnes : a
   };
 }
 
@@ -352,6 +374,18 @@ p.tests = {
     a = gash.math.findFraction(98 / 99, 99);
     if (a.n != 98 || a.d != 99) {
       throw 'fractionFinder cannot identify advanced fractions properly.';
+    }
+    a = gash.math.findFraction(0.5);
+    if (a.plainText != '1/2' || a.noOnes != '1/2') {
+      throw 'fractionFinder does not build plain text fractions properly.';
+    }
+    a = gash.math.findFraction(-1);
+    if (a.noOnes != '-') {
+      throw 'fractionFinder does not build plain text fractions without ones properly (-1).';
+    }
+    a = gash.math.findFraction(1);
+    if (a.noOnes != '') {
+      throw 'fractionFinder does not build plain text fractions without ones properly (+1).';
     }
   },
   // Make fairly sure that disallowed values are not selected by randomFraction.
