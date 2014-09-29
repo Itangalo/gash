@@ -11,7 +11,7 @@
 var p = new gashPlugin('tests');
 
 p.apiVersion = 1;
-p.subVersion = 1;
+p.subVersion = 2;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
 };
@@ -111,3 +111,10 @@ p.tests = {
     }
   }
 };
+
+/**
+ * Function to allow running tests from the coding environment.
+ */
+function gashTestsRunTests() {
+  gash.tests.runTests();
+}
