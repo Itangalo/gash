@@ -71,6 +71,33 @@ p.randomSelect = function(values) {
 }
 
 /**
+ * Randomizes the order of the content in an array.
+ *
+ * Code taken from http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array.
+ *
+ * @param {array} [array= An array with stuff.]
+ * return {array}
+ */
+p.shuffleArray = function(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex ;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+/**
  * Replaces all occurances of the listed replacements, allowing switching of variables and
  * not breaking up large replacements by smaller ones.
  *
