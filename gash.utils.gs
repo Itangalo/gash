@@ -11,7 +11,7 @@
 var p = new gashPlugin('utils');
 
 p.apiVersion = 1;
-p.subVersion = 1;
+p.subVersion = 2;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
 };
@@ -145,7 +145,7 @@ p.mergeRecursive = function(obj1, obj2) {
  * return {boolean}
  */
 p.isValidUrl = function(str) {
-// This pattern recognition breaks down with some standard strings.  
+// This pattern recognition breaks down with some standard strings.
 //  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
 //  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
 //  '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
@@ -337,11 +337,11 @@ p.tests = {
       throw 'getCurrentUrl does not return a sane url.';
     }
     var url = gash.utils.getCurrentUrl({foo : 'bar'});
-    if (url.substring(substring.length, substring.length - 8) != '?foo=bar') {
+    if (url.substring(url.length, url.length - 8) != '?foo=bar') {
       throw 'getCurrentUrl does not append query fragments correctly.';
     }
     url = gash.utils.getCurrentUrl({foo : ['bar', 'baz']});
-    if (url.substring(substring.length, substring.length - 12) != '?foo=bar,baz') {
+    if (url.substring(url.length, url.length - 12) != '?foo=bar,baz') {
       throw 'getCurrentUrl does not append array query fragments correctly.';
     }
   },
