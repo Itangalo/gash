@@ -64,7 +64,7 @@ p.defaults = new configObject({
     lineWidth : 0,
     curveType : 'function',
     theme : 'maximized',
-    enableInteractivity : true
+    enableInteractivity : false
   }),
 });
 
