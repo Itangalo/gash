@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 2;
+p.subVersion = 3;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -43,6 +43,29 @@ p.defaults = new configObject({
 //  latexFont : '\\fn_cs', // Comic sans
   latexFont : '', // Latin modern (default)
   swedishNotation : true,
+  // Settings relevant to graphing only
+  graph : new configObject({
+    xMin : -5,
+    xMax : 5,
+    yMin : -Infinity,
+    yMax : Infinity,
+    width : 320,
+    height : 200,
+    steps : 100,
+    title : false,
+    xTitle : 'x',
+    yTitle : 'y',
+    fTitle : 'f(x)',
+    showLegend : false,
+    color : 'blue',
+    pointStyle : Charts.PointStyle.TINY,
+    pointSize : 1,
+    dataOpacity : 1,
+    lineWidth : 0,
+    curveType : 'function',
+    theme : 'maximized',
+    enableInteractivity : true
+  }),
 });
 
 /**
@@ -297,7 +320,7 @@ p.numberOfTerms = function(expression) {
  *   y : The y coordinate, as a string.
  *   code : If parsing is ambivalent, this is set to gash.math.CANNOT_PARSE.
  *          If the string cannot be interpreted as a coordinate, it is set to gash.math.WRONG_FORM.
- *   message : If parsing failed, this contains a clear-text message that could be displayed to the user.
+ *   message : If parsing failed, this contains a clear-text message that could be displayed to the user.]
  */
 p.parseCoordinate = function(coordinateString) {
   coordinateString = coordinateString.trim();
@@ -355,6 +378,62 @@ p.parseCoordinate = function(coordinateString) {
   }
 
   return coordinates;
+}
+
+/**
+ * Builds a scatter plot from a function, thereby simulating a function graph.
+ *
+ * @param {function} [f= The function to plot. Should take a numeric argument and return a number.]
+ * @param {object} [options= Options to control the plot. See gash.math.defaults.graph.]
+ * return {UiElement} [A Google scatter chart.]
+ */
+p.createGraph = function(f, options) {
+  // Set some default values.
+  if (typeof f != 'function') {
+    return '(No function to make a graph of.)';
+  }
+  options = this.defaults.graph.overwriteWith(options);
+
+  // Build a table with points to plot.
+  var points = Charts.newDataTable().addColumn(Charts.ColumnType.NUMBER, 'x').addColumn(Charts.ColumnType.NUMBER, options.fTitle);
+  var step = (options.xMax - options.xMin) / (options.steps + 1);
+  var y;
+  for (var i = options.xMin; i <= options.xMax; i = i + step) {
+    y = f(i);
+    // Keep the points within the y-axis limits.
+    if (!isNaN(y) && y >= options.yMin && y <= options.yMax) {
+      points.addRow([i, y]);
+    }
+  }
+  points.build();
+
+  // Build a graph and apply some settings to it.
+  var graph = Charts.newScatterChart().setDataTable(points).setDimensions(options.width, options.height).setColors([options.color]);
+  // Set some explicit options.
+  graph.setPointStyle(options.pointStyle).setXAxisRange(options.xMin, options.xMax);
+  if (!options.showLegend) {
+    graph.setLegendPosition(Charts.Position.NONE);
+  }
+  if (options.title !== false) {
+    graph.setTitle(options.title);
+  }
+  if (options.xTitle) {
+    graph.setXAxisTitle(options.xTitle);
+  }
+  if (options.yTitle) {
+    graph.setYAxisTitle(options.yTitle);
+  }
+  if (options.explorer != undefined) {
+    graph.setOption('explorer', {});
+  }
+
+  // Add additional options.
+  var allowedOptions = ['dataOpacity', 'lineWidth', 'curveType', 'pointSize', 'enableInteractivity', 'theme'];
+  for (var i in allowedOptions) {
+    graph.setOption(allowedOptions[i], options[allowedOptions[i]]);
+  }
+
+  return graph.build();
 }
 
 /**
