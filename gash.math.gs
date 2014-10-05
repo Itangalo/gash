@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 3;
+p.subVersion = 4;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -151,6 +151,38 @@ p.findFraction = function(a, maxDenominator) {
     noOnes : a
   };
 }
+
+/**
+ * Returns 1, 0 or -1 depending on the sign of the given number. Alternatively returns '+', '-' or '0'.
+ *
+ * @param {float} [a= The number to check.]
+ * @param {asCharacter} [If true, the return will be a sign to insert into strings, rather than a number.]
+ * return {mixed}
+ */
+p.sign = function(a, asCharacter) {
+  if (a > 0) {
+    if (asCharacter) {
+      return '+';
+    }
+    else {
+      return 1;
+    }
+  }
+  if (a < 0) {
+    if (asCharacter) {
+      return '-';
+    }
+    else {
+      return -1;
+    }
+  }
+  if (asCharacter) {
+    return '0';
+  }
+  else {
+    return 0;
+  }
+};
 
 /**
  * Returns the greatest common denominator for integers a and b.
@@ -465,6 +497,18 @@ p.tests = {
     a = gash.math.findFraction(1);
     if (a.noOnes != '') {
       throw 'fractionFinder does not build plain text fractions without ones properly (+1).';
+    }
+  },
+  // Make fairly sure that disallowed values are not selected by randomFraction.
+  checkSign : function() {
+    if (typeof gash.math.sign(0, true) != 'string') {
+      throw 'Sign does not fully respect that characters should be returned (on zero value).';
+    }
+    if (gash.math.sign(-.01) != -1) {
+      throw 'Sign does not recognize negaitve numbers.';
+    }
+    if (gash.math.sign(.01) != 1) {
+      throw 'Sign does not recognize positive numbers.';
     }
   },
   // Make fairly sure that disallowed values are not selected by randomFraction.
