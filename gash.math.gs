@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 4;
+p.subVersion = 5;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -139,7 +139,8 @@ p.findFraction = function(a, maxDenominator) {
         n : Math.round(a * denominator),
         d : denominator,
         plainText : plainText,
-        noOnes : noOnes
+        noOnes : noOnes,
+        value : a
       }
     }
     denominator++;
@@ -148,7 +149,8 @@ p.findFraction = function(a, maxDenominator) {
     n : a,
     d : 1,
     plainText : a,
-    noOnes : a
+    noOnes : a,
+    value : a
   };
 }
 
