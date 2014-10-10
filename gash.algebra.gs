@@ -463,5 +463,9 @@ p.tests = {
     if (gash.algebra.compareEquations(eq1, eq2, 'x', subs) == gash.algebra.CORRECT) {
       throw 'Equation comparison accepts trivial equations as correct answers.';
     }
+    eq2 = 'x=5-2y';
+    if (gash.algebra.compareEquations(eq1, eq2, 'x', subs, ['y', 'x']) != gash.algebra.CORRECT) {
+      throw 'Advanced variable replacements are not working.';
+    }
   },
 }
