@@ -1,8 +1,6 @@
 gash
 ====
 
-THIS FILE NEEDS UPDATING, TO REFLECT GASH 2.X.
-
 gash (Google Apps Script helpers) is a plugin based framework to make it easier
 to write Google scripts.
 
