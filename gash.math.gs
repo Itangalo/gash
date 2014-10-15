@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 5;
+p.subVersion = 6;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -152,6 +152,19 @@ p.findFraction = function(a, maxDenominator) {
     noOnes : a,
     value : a
   };
+}
+
+/**
+ * Rounds a number to a given number of significant digits.
+ *
+ * @param {float} [a= The number to round.]
+ * @param {precision} [The number of significant digits.]
+ * return {float}
+ */
+p.round = function(a, precision) {
+  precision = precision || this.defaults.precision;
+  var magnitude = Math.floor(Math.log(Math.abs(a)) / Math.LN10) + 1;
+  return Math.round(a * Math.pow(10, precision - magnitude)) / Math.pow(10, parseInt(precision - magnitude));
 }
 
 /**
@@ -499,6 +512,20 @@ p.tests = {
     a = gash.math.findFraction(1);
     if (a.noOnes != '') {
       throw 'fractionFinder does not build plain text fractions without ones properly (+1).';
+    }
+  },
+  rounding : function() {
+    if (gash.math.round(123.456, 4) != 123.5) {
+      throw 'Basic rounding does not work.';
+    }
+    if (gash.math.round(123.456, 2) != 120) {
+      throw 'Rounding to tens does not work.';
+    }
+    if (gash.math.round(0.00123456, 2) != 0.0012) {
+      throw 'Rounding of small numbers does not work.';
+    }
+    if (gash.math.round(-0.00123456, 2) != -0.0012) {
+      throw 'Rounding of negative numbers does not work.';
     }
   },
   // Make fairly sure that disallowed values are not selected by randomFraction.
