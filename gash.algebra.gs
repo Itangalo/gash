@@ -318,20 +318,28 @@ p.compareExpressions = function(expression1, expression2, var1, var2, options) {
 p.compareEquations = function(equation1, equation2, freeVar, substitutions, vars2, options) {
   options = this.defaults.overwriteWith(options);
 
-  // Replace variables in the second equation, if needed.
+  // Replace variables in the second equation, if needed, to make them the same
+  // as in the first equation.
   if (Array.isArray(vars2)) {
-    if (vars2.length != (Object.keys(substitutions).length + 1)) {
+    var offset = (freeVar == undefined) ? 0: 1;
+    if (vars2.length != (Object.keys(substitutions).length + offset)) {
       return this.CANNOT_INTERPRET;
     }
     var replacements = {};
-    replacements[vars2.shift()] = freeVar;
+    if (freeVar != undefined) {
+      replacements[vars2.shift()] = freeVar;
+    }
     for (var i in substitutions) {
       replacements[vars2.shift()] = i;
     }
     equation2 = gash.utils.advancedReplacements(equation2, replacements);
   }
 
-  var allVars = [freeVar];
+  // Build a list of all the variables used in the equations.
+  allVars = [];
+  if (freeVar != undefined) {
+    allVars.push(freeVar);
+  }
   for (var i in substitutions) {
     allVars.push(i);
   }
@@ -347,7 +355,6 @@ p.compareEquations = function(equation1, equation2, freeVar, substitutions, vars
     return this.WRONG_FORM;
   }
   equation1 = parts[0] + '-(' + parts[1] + ')';
-
   // Do the same with the second equation.
   parts = equation2.split('=');
   if (parts.length != 2) {
@@ -358,7 +365,8 @@ p.compareEquations = function(equation1, equation2, freeVar, substitutions, vars
   }
   equation2 = parts[0] + '-(' + parts[1] + ')';
 
-  // Make substitutions in both equations, simplifying them down to one variable.
+  // Make substitutions in both equations, simplifying them down to one variable
+  // (or zero variables, if we have no free variable).
   var r;
   for (var i in substitutions) {
     r = {};
@@ -468,4 +476,16 @@ p.tests = {
       throw 'Advanced variable replacements are not working.';
     }
   },
+  compqreEquationsNoFree : function () {
+    var eq1 = '5*0.22^x=2';
+    var eq2 = '0.22^x=2/5';
+    var subs = {x : 'log(2/5)/log(0.22)'};
+    if (gash.algebra.compareEquations(eq1, eq2, undefined, subs) != gash.algebra.CORRECT) {
+      throw 'Equation comparison does not evaluate equations with no free variables correctly. (Correct evaluated as incorrect.)';
+    }
+    eq2 = '0.22^x=5/2';
+    if (gash.algebra.compareEquations(eq1, eq2, undefined, subs) != gash.algebra.INCORRECT) {
+      throw 'Equation comparison does not evaluate equations with no free variables correctly. (Incorrect evaluated as correct.)';
+    }
+  }
 }
