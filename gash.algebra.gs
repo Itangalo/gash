@@ -12,7 +12,7 @@
 var p = new gashPlugin('algebra');
 
 p.apiVersion = 1;
-p.subVersion = 1;
+p.subVersion = 2;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
