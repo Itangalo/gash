@@ -1,6 +1,7 @@
 /**
  * @file: Helper functions for evaluating algebraic expressions and doing calculations.
  * Requires Parser: See http://silentmatt.com/javascript-expression-evaluator/
+ * See in particular this branch: https://github.com/Itangalo/js-expression-eval
  */
 
 /**
@@ -12,7 +13,7 @@
 var p = new gashPlugin('algebra');
 
 p.apiVersion = 1;
-p.subVersion = 2;
+p.subVersion = 3;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -51,7 +52,7 @@ p.defaults = new configObject({
  */
 p.initialize = function() {
   if (typeof Parser != 'function') {
-    throw 'The algebra plugin requires Parser. See http://silentmatt.com/javascript-expression-evaluator/ for code.';
+    throw 'The algebra plugin requires Parser. See https://github.com/Itangalo/js-expression-eval for code and http://silentmatt.com/javascript-expression-evaluator/ for documentation.';
   }
   return true;
 }
@@ -88,6 +89,14 @@ p.preParseExpression = function(expressionString, options) {
     re.commaAsDecimal = {
       expr : /(\d)[,]+(\d)/,
       repl : '$1.$2',
+    };
+    re.logarithms2 = {
+      expr : 'log(',
+      repl : 'lg(',
+    };
+    re.logarithms3 = {
+      expr : 'ln(',
+      repl : 'log(',
     };
   }
 
@@ -408,6 +417,18 @@ p.tests = {
     var options = new configObject({replacements : {a : 'b', b : 'a'}});
     if (gash.algebra.preParseExpression('a+2b', options) != 'b+2*a') {
       throw 'Advanced replacement rules in preParseExpression not working.';
+    }
+  },
+  // Assure that logarithm funcitons a rewritten as required.
+  preParseLogarithms : function () {
+    if (gash.algebra.preParseExpression('log(10)') != 'lg(10)') {
+      throw 'preParseExpression does not rewrite log to lg.';
+    }
+    if (gash.algebra.preParseExpression('ln(15)') != 'log(15)') {
+      throw 'preParseExpression does not rewrite ln to log.';
+    }
+    if (gash.algebra.evaluate('log(100)') != 2) {
+      throw 'evaluator does not evaluate 10-logarithms properly.';
     }
   },
   // Assure some important aspects of expression evaluation engine.
