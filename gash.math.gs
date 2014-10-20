@@ -337,6 +337,7 @@ p.latex2image = function(expression, options) {
       expression = expression.replace(i, replacements[i]);
     }
   }
+  expression = encodeURIComponent(expression);
   var app = UiApp.getActiveApplication();
   return app.createImage('http://latex.codecogs.com/png.latex?\\dpi{' + options.latexDpi + '} ' + options.latexFont + ' ' + expression);
 }
