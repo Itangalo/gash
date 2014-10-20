@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 6;
+p.subVersion = 7;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -331,11 +331,12 @@ p.latex2image = function(expression, options) {
     replacements['.'] = ',';
     replacements[','] = '{,}';
   }
-  else {
-  }
 
   for (var i in replacements) {
-    expression = expression.replace(i, replacements[i]);
+    while (expression.replace(i, replacements[i]) != expression) {
+      expressionString = expressionString.replace(re[i].expr, re[i].repl);
+      expression = expression.replace(i, replacements[i]);
+    }
   }
   var app = UiApp.getActiveApplication();
   return app.createImage('http://latex.codecogs.com/png.latex?\\dpi{' + options.latexDpi + '} ' + options.latexFont + ' ' + expression);
