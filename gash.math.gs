@@ -334,7 +334,6 @@ p.latex2image = function(expression, options) {
 
   for (var i in replacements) {
     while (expression.replace(i, replacements[i]) != expression) {
-      expressionString = expressionString.replace(re[i].expr, re[i].repl);
       expression = expression.replace(i, replacements[i]);
     }
   }
