@@ -26,6 +26,23 @@ function doGet(queryInfo) {
 }
 
 /**
+ * The entry point for form submissions.
+ */
+function doPost(eventInfo) {
+  eventInfo = eventInfo || {}; // Allows running the doPost function without an actual page call.
+  var app = UiApp.createApplication();
+
+  // Initialize all plugins, and make sure they are ok.
+  if (!gash.initialize(eventInfo)) {
+    return app;
+  }
+
+  // Call all doGet functions in the plugins.
+  gash.invokeAll('doPost', eventInfo);
+  return app;
+}
+
+/**
  * The main module for gash. See example files for how to use gash.
  */
 var gash = (function () {
@@ -33,7 +50,7 @@ var gash = (function () {
   var plugins = []; // Array with names of all plugins.
   var queryParameters = new configObject({}); // configObject with page query parameters.
   var apiVersion = 2;
-  var subVersion = 1;
+  var subVersion = 2;
 
   /**
    * Makes query parameters globally available (for good and bad) and initializes plugins.
