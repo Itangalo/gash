@@ -95,7 +95,12 @@ p.randomFraction = function(min, max, disallowed, maxDenominator) {
   if (Array.isArray(disallowed) != true) {
     disallowed = [disallowed];
   }
-  options.maxDenominator = gash.utils.randomInt(2, options.maxDenominator);
+  if (options.maxDenominator >= 2) {
+    options.maxDenominator = gash.utils.randomInt(2, options.maxDenominator);
+  }
+  else {
+    options.maxDenominator = 1;
+  }
   for (var i in disallowed) {
     disallowed[i] = Math.round(disallowed[i] * options.maxDenominator);
   }
