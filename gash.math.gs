@@ -11,7 +11,7 @@
 var p = new gashPlugin('math');
 
 p.apiVersion = 1;
-p.subVersion = 8;
+p.subVersion = 9;
 p.dependencies = {
   gash : {apiVersion : 2, subVersion : 1},
   utils : {apiVersion : 1, subVersion : 1},
@@ -95,6 +95,7 @@ p.randomFraction = function(min, max, disallowed, maxDenominator) {
   if (Array.isArray(disallowed) != true) {
     disallowed = [disallowed];
   }
+  options.maxDenominator = gash.utils.randomInt(2, options.maxDenominator);
   for (var i in disallowed) {
     disallowed[i] = Math.round(disallowed[i] * options.maxDenominator);
   }
