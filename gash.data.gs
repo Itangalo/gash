@@ -112,7 +112,7 @@ p.loadData = function(table, id) {
 }
 
 /**
- * Loads multiple data objects from parse.com.
+ * Loads data objects from parse.com matching specified properties.
  *
  * @param {string} [table= The class name used at parse.com.]
  * @param {string} [searchProperties= The properties to search for, e.g. {'name' : 'needle', 'place' : 'haystack'}.]
