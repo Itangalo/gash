@@ -30,7 +30,7 @@ function doGet(queryInfo) {
  */
 function doPost(eventInfo) {
   eventInfo = eventInfo || {}; // Allows running the doPost function without an actual page call.
-  var app = UiApp.createApplication();
+  var app = UiApp.getActiveApplication();
 
   // Initialize all plugins, and make sure they are ok.
   if (!gash.initialize(eventInfo)) {
@@ -38,8 +38,37 @@ function doPost(eventInfo) {
   }
 
   // Call all doGet functions in the plugins.
-  gash.invokeAll('doPost', eventInfo);
+  gash.invokeAll('doGet', queryInfo);
   return app;
+}
+
+/**
+ * The entry point for server handler callbacks.
+ */
+function gashHandlerCallback(eventInfo) {
+  // Initialize all plugins, and make sure they are ok.
+  if (!gash.initialize(eventInfo)) {
+    return app;
+  }
+
+  var callback = eventInfo.parameter[eventInfo.parameter.source + '-callback'];
+  var parts = callback.split('.');
+  if (parts[0] != 'gash') {
+    throw 'Callback must be a method within the gash object.';
+  }
+  parts.shift();
+  var target = gash;
+  for (var i in parts) {
+    target = target[parts[i]];
+    if (target == undefined) {
+      throw 'Cannot find callback function ' + callback + '.';
+    }
+  }
+  if (typeof target != 'function') {
+    throw 'Callback ' + callback + ' is not a function.';
+  }
+  target(eventInfo);
+  return UiApp.getActiveApplication();
 }
 
 /**
@@ -50,7 +79,7 @@ var gash = (function () {
   var plugins = []; // Array with names of all plugins.
   var queryParameters = new configObject({}); // configObject with page query parameters.
   var apiVersion = 2;
-  var subVersion = 2;
+  var subVersion = 3;
 
   /**
    * Makes query parameters globally available (for good and bad) and initializes plugins.
@@ -127,6 +156,9 @@ var gash = (function () {
       return false;
     }
 
+    // Run overrides declared by plugins.
+    gash.invokeAll('overrides', queryInfo);
+
     return true;
   }
 
@@ -150,6 +182,52 @@ var gash = (function () {
     return result;
   }
 
+  /**
+   * Returns the general server handler for gash, and creates one if need be.
+   */
+  function getServerHandler() {
+    var app = UiApp.getActiveApplication();
+    var handler = app.getElementById('gashHandler');
+    if (typeof handler.addCallbackElement == 'function') {
+      return handler;
+    }
+    else {
+      handler = app.createServerHandler('gashHandlerCallback').setId('gashHandler');
+      return handler;
+    }
+  }
+
+  /**
+   * Connects a callback method with a given UI elment.
+   *
+   * This method can be used to route all server handler callbacks through gash,
+   * thereby assuring proper plugin initation and so on. The ID of the widget must
+   * not be changed after the callback is connected, since it is used to remember
+   * which callback to used.
+   *
+   * @param {UI element} [element= The widget to connect the callback to.]
+   * @param {string} [callback= The name of the method to call. Must begin with 'gash.'.]
+   */
+  function connectCallback(element, callback) {
+    var app = UiApp.getActiveApplication();
+    var hidden = app.createHidden(element.getId() + '-callback', callback);
+    this.getServerHandler().addCallbackElement(hidden);
+  }
+
+  /**
+   * Shortcut for adding callback elements to the gash server handler.
+   *
+   * @param {UI element} [element= The element to add.]
+   * @param {string} [name= If set, the element will be given this name before being added.]
+   */
+  function addCallbackElement(element, name) {
+    var app = UiApp.getActiveApplication();
+    if (name && typeof element.setName == 'function') {
+      element.setName(name);
+    }
+    this.getServerHandler().addCallbackElement(element);
+  }
+
   return {
     // Properties
     plugins : plugins,
@@ -159,6 +237,9 @@ var gash = (function () {
     // Methods
     initialize : initialize,
     invokeAll : invokeAll,
+    getServerHandler : getServerHandler,
+    connectCallback : connectCallback,
+    addCallbackElement : addCallbackElement,
   };
 }) ();
 
