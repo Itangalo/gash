@@ -69,6 +69,9 @@ function gashHandlerCallback(eventInfo) {
   }
 
   var callback = eventInfo.parameter[eventInfo.parameter.source + '-callback'];
+  if (!callback) {
+    throw 'No callback defined for source ' + eventInfo.parameter.source + '.';
+  }
   var parts = callback.split('.');
   if (parts[0] != 'gash') {
     throw 'Callback must be a method within the gash object.';
