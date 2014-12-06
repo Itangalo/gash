@@ -26,6 +26,23 @@ function doGet(queryInfo) {
 }
 
 /**
+ * The entry point for spreadsheet and document open.
+ */
+function onOpen(queryInfo) {
+  queryInfo = queryInfo || {}; // Allows running the onOpen function without an actual page call.
+  var app = UiApp.createApplication();
+
+  // Initialize all plugins, and make sure they are ok.
+  if (!gash.initialize(queryInfo)) {
+    return app;
+  }
+
+  // Call all onOpen functions in the plugins.
+  gash.invokeAll('onOpen', queryInfo);
+  return app;
+}
+
+/**
  * The entry point for form submissions.
  */
 function doPost(eventInfo) {
